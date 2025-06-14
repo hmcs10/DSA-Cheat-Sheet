@@ -1,3 +1,52 @@
+# [78. Subsets](https://leetcode.com/problems/subsets/description/)
+
+## Approach ->
+- The code generates all possible subsets of a given array by using a recursive approach. For each element in the array, it explores two options: including the element in the current subset or excluding it. The process continues recursively until all elements are considered, and the subsets are stored in the ans vector.
+
+In the interview make the recursive tree, that will help you come up with the approach, and vizualise space complexity.
+
+![Recursive Tree](images/Subset%20R%20tree.png)
+
+TC-> O(2^N) * O(N). 
+Every elements have 2 options, and we have N elements, hence O(2^N) times the recursive calls. And each subset can take up to 
+O(N) time to be copied into the result list.
+SC-> O(2N)
+The maximum height of the recursive tree will be N, so the stack space occupied is O(N). But we are also storing the subsets in our ans, so additional O(N) auxilary space. 
+
+---
+## Code ->
+```cpp
+class Solution {
+public:
+    vector<vector<int>> ans;
+
+    void subsets(vector<int>& nums, vector<int> temp, int n){
+        if(n<0){ // if n is negative, push temp in ans
+            ans.push_back(temp);
+            return;
+        }
+        
+        // Include the current element in the subset
+        temp.push_back(nums[n]);
+        subsets(nums, temp, n-1); // trust recursion and let it explore more options
+
+        // Exclude the current element from the subset
+        temp.pop_back();
+        subsets(nums, temp, n-1); // let recursion explore
+    }
+
+    vector<vector<int>> subsets(vector<int>& nums) {
+        vector<int> temp;
+        int n = nums.size();
+
+        subsets(nums, temp, n-1);
+        return ans;
+    }
+};
+```
+
+After this, the interviewer might ask "what if we have duplicate elements"?
+
 # [62. Unique Paths](https://leetcode.com/problems/unique-paths/)
 
 ## Approach -> 
@@ -19,44 +68,8 @@ public:
     }
 };
 ```
-# [78. Subsets](https://leetcode.com/problems/subsets/description/)
 
-## Approach ->
-- The code generates all possible subsets of a given array by using a recursive approach. For each element in the array, it explores two options: including the element in the current subset or excluding it. The process continues recursively until all elements are considered, and the subsets are stored in the ans vector.
 
-TC-> O(2^N) * O(N). SC-> O(N)
-
----
-## Code ->
-```cpp
-class Solution {
-public:
-    vector<vector<int>> ans;
-
-    void subsets(vector<int>& nums, vector<int> temp, int n){
-        if(n<0){ // if n is negative, push temp in ans
-            ans.push_back(temp);
-            return;
-        }
-        
-        // Include the current element in the subset
-        temp.push_back(nums[n]);
-        subsets(nums, temp, n-1);
-
-        // Exclude the current element from the subset
-        temp.pop_back();
-        subsets(nums, temp, n-1);
-    }
-
-    vector<vector<int>> subsets(vector<int>& nums) {
-        vector<int> temp;
-        int n = nums.size();
-
-        subsets(nums, temp, n-1);
-        return ans;
-    }
-};
-```
 
 # [ Subset Sum Equal To K](https://www.codingninjas.com/studio/problems/subset-sum-equal-to-k_1550954?leftPanelTabValue=PROBLEM)
 
@@ -88,6 +101,27 @@ bool subsetSumToK(int n, int k, vector<int> &arr) {
 ```
 
 - Functional recursion call
+```cpp
+#include <bits/stdc++.h> 
+bool helper(int n, int k, vector<int> &arr, int i, int sum){
+    if(i>=n){
+        return sum==k?true:false;
+    }
+
+    sum+=arr[i];
+    bool call1 = helper(n, k, arr, i+1, sum);
+
+    sum-=arr[i];
+    bool call2 = helper(n, k, arr, i+1, sum);
+
+    return call1 || call2;
+}
+bool subsetSumToK(int n, int k, vector<int> &arr) {
+    return helper(n, k, arr, 0, 0);
+}
+```
+
+We can make the above code even shorter:
 ```cpp
 bool helper(int n, int k, vector<int> &arr, int sum){
     if(sum==k) return true;
@@ -336,6 +370,8 @@ public:
 ## Approach ->
 The recursive approach leverages the observation that exponentiation problems, such as x^n, can be optimized by breaking them down into subproblems. By dividing the exponent (n) into halves, the recursive function efficiently calculates the result, taking advantage of the fact that we can write x^8 as (x^4 * x^4) and we can write x^9 as (x^4 * x^4 * x) This approach reduces the time complexity to logarithmic (log n) by repeatedly halving the exponent.
 
+Think of an edge case now.. Did you think of any? 
+Ask the interviewer about the edge case - can x and n be negative? The interviewer will say that yes it will be, so to tackle that you make the normal recursive calls but while finally returning the ans check if n is negative, if yes then return 1/ans else simply return ans. And for x you don't have to worry because while solving - values for x are tackled automatically (because 2*2*2 is 8 but -2*-2*-2 is -8 and it gets tackled automatically)
 ## Code ->
 ```cpp
 #include <cmath>
@@ -371,6 +407,12 @@ public:
 };
 ```
 
+TC -> Each recursive call reduces the problem size by half: helper(x, n/2). Therefore, the number of recursive calls is log[n]. So TC is O(log(n)).
+
+SC -> The space complexity depends on the recursion depth: At each step, a new stack frame is added to the call stack.
+The maximum recursion depth is also O(log∣n∣).
+So: Space Complexity = O(log(n)) (due to recursion stack).
+
 # [1922. Count Good Numbers](https://leetcode.com/problems/count-good-numbers/description/)
 
 ## Approach -> 
@@ -392,7 +434,8 @@ public:
     }
     int countGoodNumbers(long long n) {
         long long int odd = n/2;
-        long long int even = (n+1)/2;
+        long long int even = (n+1)/2; 
+        // Don't use ceil(n/2) instead of (n+1)/2 above, because both n and 2 are integers, n/2 performs integer division, which truncates (discards) the decimal part. Instead you can use ceil(n/2.0);
 
         long long int first = power(5, even);
         long long int second = power(4, odd);
@@ -402,6 +445,9 @@ public:
 };
 ```
 
+TC-> Called twice for (5^even) and (4^odd) → Total time = O ( log ⁡even + log ⁡odd ) = O(log n).
+SC-> O(log n)
+
 # [39. Combination Sum](https://leetcode.com/problems/combination-sum/)
 
 ## [Approach](https://takeuforward.org/data-structure/combination-sum-1/)
@@ -410,60 +456,69 @@ public:
 ```cpp
 class Solution {
 public:
-    vector<vector<int>> ans;
-
-    void helper(vector<int>& candidates, int target, vector<int> temp, int sum, int idx){
-        if(sum>target) return;
-        if(idx==candidates.size()){
-            if(sum==target) ans.push_back(temp);
-
+    void helper(vector<int> &candidates, int target, vector<vector<int>> &ans, vector<int> temp, int i){
+        if(target<0) return; // To terminate the cases where i is not increasing
+        if(i>=candidates.size()){ // Will terminate the cases where i is increasing
+            if(target==0) ans.push_back(temp); // If we have reached the end, and achieved target then include in ans
             return;
         }
 
-        temp.push_back(candidates[idx]);
-        helper(candidates, target, temp, sum+candidates[idx], idx);
+        temp.push_back(candidates[i]);
+        target-=candidates[i];
+        helper(candidates, target, ans, temp, i);
 
         temp.pop_back();
-        helper(candidates, target, temp, sum, idx+1);
+        target+=candidates[i];
+        helper(candidates, target, ans, temp, i+1);
     }
-
     vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        vector<vector<int>> ans;
         vector<int> temp;
-        helper(candidates, target, temp, 0, 0);
+        helper(candidates, target, ans, temp, 0);
         return ans;
     }
 };
 ```
-Time Complexity: O(2^t * k) where t is the target, k is the average length
+Time Complexity: O(2^t * k) where t is the target, k is the average length of each combination
 
-Reason: Assume if you were not allowed to pick a single element multiple times, every element will have a couple of options: pick or not pick which is 2^n different recursion calls, also assuming that the average length of every combination generated is k. (to put length k data structure into another data structure)
+Reason: 
+Case 1: Assume if you were not allowed to pick a single element multiple times, every element will have a couple of options: pick or not pick which is 2^n different recursion calls, also assuming that the average length of every combination generated is k. So total TC-> O(2^n * k) (expl: to put temp of length (let's say k) in ans, it will take a TC of O(k), because that is not a O(1) operation.)
 
-Why not (2^n) but (2^t) (where n is the size of an array)?
+Case 2: In this question where picking a single element multiple times is allowed, why is the TC not (2^n) but (2^t) (where n is the size of an array, and t is the target )?
 
-Assume that there is 1 and the target you want to reach is 10 so 10 times you can “pick or not pick” an element.
+Assume that you are given [1] as candidates and the target is given as 10, so 10 times you can “pick or not pick” a single element that is given. So for each element given as a candidate, you can pick it 'target' number of times in the worst case scenerio. Hence the overall TC-> O(2^t * k)
 
-Space Complexity: O(k*x), k is the average length and x is the no. of combinations
+Space Complexity: Recrusive stack can go as long as target so O(t) for that and for the vector ans it is O(k*x), k is the average length and x is the no. of combinations (basically the total size of the ans vector)
 
 # [40. Combination Sum II](https://leetcode.com/problems/combination-sum-ii/description/)
 
-## [Approach (look at the recursive tree)](https://takeuforward.org/data-structure/combination-sum-ii-find-all-unique-combinations/)
 # Intuition:
 - The problem involves finding all unique combinations of candidates that sum to the target.
-- The key challenge is to avoid duplicate combinations in the result.
+- Unlike the last problem, Combination Sum, we cannot use an element multiple times.
+- The key challenge is to avoid duplicate combinations in the result because the elements given are not unique, they might be repeating.
+- Another thing that's not mentioned in the question but should be is - our ans can be in lexicographically sorted order, it doesn't matter.
 - A recursive backtracking approach is used to explore and generate combinations.
+
+- The brute force approach that comes in my mind is that we just copy the code for combination sum 1 and on the step where we are including the element and not moving the index, we move the index. Also instead of passing the vector of vector ans, we pass a hashset so that there is no duplicates. But that's only going to increase the space complexity of the problem. And the TC will increase to (2^t) * k log n, because inserting an elemnt into a set has a TC of O(log n), so that will be extra as well.
+
+- We cannot afford this brute force algo, so we have to modify our recursion in a different way. So instead of the pick-not pick method, we will go with pick subsequences method. This way we can ignore the duplicate answers. How? Let's look at the recursive tree to understand that.
+
+![Combination Sum 2 Tree](images/combinationSum2.png)
+
+Here, we are calling f(index, target, ans). In the first iteration when our index is at 0, we take the first 1 and then ignore the next two 1s. Then we take the 2 and ignore the next 2. In the second iteration, the index has moved to position 1, so we take that 1 and ignore the next 1. Then we take the 2 and ignore the next 2. That way we have now a combination of [1,1,2], which is equal to target(the first 1 is from the last recursive call where we had picked the 1 at index 0).
+This way we will never get a duplicate answer because for every index we have a unique answer (because we ignore the duplicates on every index).
+
 # Approach:
 - Sort the Candidates: Before starting the recursive calls, sort the candidates. Sorting is crucial to avoid duplicate combinations and to make the combinations appear in a sorted order.
 
-- Define Recursive Helper Function: The helper function is a recursive function that explores combinations.
-It takes parameters: the current candidates array, the remaining target, the current temporary combination (temp), the current sum, and the current index (idx).
+- Define Recursive Helper Function.
 
-- Base Cases: If the current sum exceeds the target, return. If the current sum equals the target, add the current combination to the result (ans) and return.
+- Base Cases: If the current sum exceeds the target, return. If the current sum equals the target, add the current combination to the ans and return.
 
-- Loop Through Candidates: Use a loop starting from the current index (idx) to the end of the candidates array. Skip consecutive duplicates to avoid duplicate combinations. If the current candidate is greater than the remaining target, break the loop (optimization). Include the current candidate in the temporary combination. Recursively call the helper function with updated parameters. Remove the last added element to backtrack and explore other combinations.
+- Loop Through Candidates: Use a loop starting from the current index (idx) to the end of the candidates array. Skip consecutive duplicates to avoid duplicate combinations. If the current candidate is greater than the remaining target, break the loop (optimization). Include the current candidate in the temp combination. Recursively call the helper function with updated parameters. Remove the last added element to backtrack and explore other combinations.
 
 - Recursive Calls: The recursive calls explore combinations with the current element included (temp.push_back) and without it (temp.pop_back).
 
-- Main Function: The combinationSum2 function initializes an empty vector (temp) and calls the helper function with the starting parameters. The sorted candidates array is used, and the result is returned.
 
 Extra Note: In this question we are required to ignore duplicates and return the answer in sorted order.
 So an approach might come in your head that why not keep the code same as of the last question and just increase the index even when we pick the element. Well that would have worked if there was no condition saying "find all unique combinations in candidates where the candidate numbers sum to target". But since we also have to keep the ans with unique elements only we will have to apply a different method of doing so.
@@ -478,50 +533,46 @@ Right output: [[1,2,5],[1,7],[1,6,1],[2,6]]
 ```cpp
 class Solution {
 public:
-    vector<vector<int>> ans;
-
-    void helper(vector<int>& candidates, int target, vector<int> temp, int sum, int idx){
-        if(sum>target) return;
-        if(sum==target){
+    void helper(vector<int>& candidates, int target, int idx, vector<int> temp, vector<vector<int>> &ans){
+        // In base case first check if target is 0 then push in ans.
+        // if you do the mistake of checking - if target is negative then return without ans, then that will give wrong ans bc the recursion stops without checking if a valid combination exists later.
+        if (target == 0) {
             ans.push_back(temp);
             return;
         }
-
-        for(int i=idx; i<candidates.size(); i++){
-            // Skip duplicates to avoid duplicate combinations
-            if(i>idx && candidates[i]==candidates[i-1]) continue;
-            // If the current candidate is greater than the target, break the loop. This will optimize the code more
-            if(candidates[i]>target) break;
-
-            // Include the current candidate in the temporary combination
-            temp.push_back(candidates[i]);
-            // Recursively call the helper function with updated parameters
-            helper(candidates, target, temp, sum+candidates[i], i+1);
-            // Remove the last added element to backtrack and explore other combinations
-            temp.pop_back();
-
-            // helper(candidates, target, temp, sum, i+1); -> we will not include this line like the previous solution. reason given below.
+        if (idx >= candidates.size()) {
+            return;
         }
-        
 
-        
+        for(int i = idx; i<candidates.size(); i++){
+            // Most important condition: Here we include the first element, instead of the last.
+            // So instead of checking for candidates[i]==candidates[i+1] and take the last repeating element, we take the first
+            // i>idx helps us ignore the first repeating element and avoid runtime error.
+            // in case of [1,1,1,2,2] if we are at the index 0, it will avoid runtime error.
+            // if we are at index 1 for second iteration, and if we don't have this condition then index 1's 1 will never be picked.
+            if(i>idx && candidates[i]==candidates[i-1]) continue;
+            if(candidates[i]>target) return; // optimization
+
+            temp.push_back(candidates[i]);
+
+            helper(candidates, target-candidates[i], i+1, temp, ans);
+
+            temp.pop_back();
+        }
     }
-
     vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
-        sort(candidates.begin(), candidates.end()); // sort the array to avoid duplicates in the future
+        vector<vector<int>> ans;
         vector<int> temp;
-        helper(candidates, target, temp, 0, 0);
+
+        sort(candidates.begin(), candidates.end());
+
+        helper(candidates, target, 0, temp, ans);
         return ans;
     }
 };
 ```
-Question -> Why did we not include helper(candidates, target, temp, sum, i+1);
-
-Reason ->  The specific line helper(candidates, target, temp, sum, i+1); (which represents the recursive call without including the current candidate) is omitted in this particular implementation because of the nature of the problem and the way duplicates are handled.
 
 The condition if(i > idx && candidates[i] == candidates[i-1]) continue; takes care of skipping over duplicate elements at the current level of recursion. In other words, when you encounter a duplicate, you skip the recursive call for that duplicate element, ensuring that you don't generate duplicate combinations.
-
-If you were to include the line helper(candidates, target, temp, sum, i+1);, it would mean that you are considering the case where you skip the current element and move to the next one. However, the way duplicates are handled in the current code essentially achieves the same effect without explicitly making that recursive call.
 
 # Time Complexity:O(2^n*k)
 
@@ -534,7 +585,7 @@ Reason: if we have x combinations then space will be x*k where k is the average 
 # [Subset Sum](https://www.codingninjas.com/studio/problems/subset-sum_3843086?utm_source=striver&utm_medium=website&utm_campaign=a_zcoursetuf&leftPanelTabValue=PROBLEM)
 
 ## Approach -> 
-Easy peasy using recursion
+Easy peasy using pick-not pick method. Note: Don't sort the num array, instead sort the ans vector after populating the answer.
 
 ## Code ->
 ```cpp
@@ -555,22 +606,25 @@ vector<int> subsetSum(vector<int> &num){
 }
 ```
 
+Time Complexity: O(2^n)+O(2^n log(2^n)). Each index has two ways. You can either pick it up or not pick it. So for n index time complexity for O(2^n) and for sorting it will take (2^n log(2^n)).
+
+Space Complexity: O(2^n) for storing subset sums, since 2^n subsets can be generated for an array of size n. And O(n) for the recursive stack, but that is negligible. So overall SC-> O(2^n).
+
 # [90. Subsets II](https://leetcode.com/problems/subsets-ii/description/)
 
 ## Approach ->
-Lets  understand  with an example where arr = [1,2,2 ].
+Lets  understand  with an example where arr = [1,2,2 ]. In the interview draw the recursive tree for this to understand. Since this is the question of avoiding the duplicates, so we will not apply pick-not pick, we will apply our pick subsequences method.
 
-Initially start with an empty data structure. In the first recursion, call make a subset of size one, in the next recursion call a subset of size 2, and so on. But first, in order to make a subset of size one what options do we have?
+Let's look at the recursive tree diagram to understand.
+![Subsets 2 recursive tree](images/Subsets2.png)
 
-We can pick up elements from either the first index or the second index or the third index. However, if we have already picked up two from the second index, picking up two from the third index will make another duplicate subset of size one. Since we are trying to avoid duplicate subsets we can avoid picking up from the third index. This should give us an intuition that whenever there are duplicate elements in the array we pick up only the first occurrence.
-
-The next recursion calls will continue from the point the previous one ended.
+Note here that all the generated elements here is a unique subset, hence there is no base condition in this solution. We can simply push the temp to our answer after every recursion call.
 
 Let’s summarize:-
 
-Sort the input array.Make a recursive function that takes the input array ,the current subset,the current index and  a list of list/ vector of vectors to contain the answer.
-Try to make a subset of size n during the nth recursion call and consider elements from every index while generating the combinations. Only pick up elements that are appearing for the first time during a recursion call to avoid duplicates.
-Once an element is picked up, move to the next index.The recursion will terminate when the end of array is reached.While returning backtrack by removing the last element that was inserted.
+Sort the input array. Make a recursive function that takes the input array, the current subset/temp, the current index and a vector of vectors to contain the answer.
+Run a loop from 0 to n-1 and only pick up elements that are appearing for the first time during a recursion call to avoid duplicates and call recursion for all of them.
+While returning/backtracking, remove the last element that was inserted.
 
 ## Code -> 
 ```cpp
@@ -583,7 +637,7 @@ public:
         for(int i=idx; i<nums.size(); i++){
             if(i>idx && nums[i]==nums[i-1]) continue;
             temp.push_back(nums[i]);
-            helper(nums, i+1, temp, ans);
+            helper(nums, i+1, temp, ans); // call for i+1, and not idx+1
             temp.pop_back();
         }
     }
@@ -604,7 +658,7 @@ Space Complexity: O(2^n * k) to store every subset of average length k. Auxiliar
 # [46. Permutations](https://leetcode.com/problems/permutations/description/)
 
 ## Approaches ->
-1. Frequency array approach ->
+1. BRUTE FORCE- Frequency array approach -> (You can skip this if you want and jump to the optimal solution)
 - Create a frequency vector freq to keep track of whether an element has been used in the current permutation.
 
 - If the size of the temporary vector temp becomes equal to the size of the input array nums, it means a valid permutation is found. Add it to the result vector ans.
@@ -653,43 +707,51 @@ public:
 };
 ```
 
-2. Swapping to generate all permutations Approach ->
-[Look at the recursive tree without fail](https://www.youtube.com/watch?v=f2ic2Rsc9pU&t=26s)
+2. OPTIMAL- Swapping to generate all permutations Approach ->
+![Permutations](images/Permutations.png)
 
-- If the current index idx reaches the size of the array, it means a valid permutation is found. Add it to the result vector ans.
+## Intuition->
 
-- Iterate through each element in the array starting from the current index idx.
-- Swap the current element with the element at index idx.
-- Recursively call the helper function with the updated array and the next index (idx+1).
-- After the recursive call, backtrack by swapping the elements back to their original positions.
+The idea is to generate all permutations of a given list of numbers using a recursive swapping approach. Instead of creating new arrays or using visited flags, we use in-place swaps to explore all possible arrangements efficiently.
+At each recursion level, we fix one element at the current index (idx) and recursively find permutations of the rest of the array.
+This is done by swapping the element at index i with the element at index idx where i ranges from idx to the end of the array.
+After recursive calls, we backtrack by undoing the swap, thus restoring the array to its original form before the next iteration.
+This method avoids using extra space for temporary vectors and ensures that each recursive call works on a modified version of the array via swaps. Look at the recursive tree and see how in the first step we have fixed 1 and then run a loop from 1 to 3 (index 0-2) and swapped 1 with each of them. Look at the code now to understand the steps. 
 
-- After the recursion, the ans vector contains all the valid permutations, and it is returned.
-
-The time complexity is O(N!), where N is the number of distinct integers in the input array nums. The space complexity is O(N) for the recursion stack, as the recursion explores each element in the array. The space complexity is optimized compared to the previous approach as it doesn't use additional temporary vectors in each recursive call.
 
 ## Code ->
 ```cpp
 class Solution {
 public:
+    // Helper function to generate permutations
     void helper(vector<int> nums, vector<vector<int>> &ans, int idx){
-        if(idx==nums.size()){
-            ans.push_back(nums);
+        // Base case: If index reaches end, we have a complete permutation
+        if(idx == nums.size()){
+            ans.push_back(nums); 
             return;
         }
 
-        for(int i=idx; i<nums.size(); i++){
-            swap(nums[idx], nums[i]);
-            helper(nums, ans, idx+1);
-            swap(nums[idx], nums[i]);
+        // Iterate over the array from current index to end
+        for(int i = idx; i < nums.size(); i++){
+            swap(nums[idx], nums[i]);      // Swap the elem at fixed idx with all the upcoming elements.
+            helper(nums, ans, idx + 1);    // Recurse for the next index, note: call for idx+1 and not i
+            swap(nums[idx], nums[i]);      // Backtrack to restore original array
         }
     }
+
+    // Main function to be called
     vector<vector<int>> permute(vector<int>& nums) {
         vector<vector<int>> ans;
         helper(nums, ans, 0);
         return ans;
     }
 };
+
 ```
+## TIme and Space Complexity
+The time complexity is O(N! * N), where N is the number of distinct integers in the input array nums. reason - Because there are N! permutations, and there is one additional loop running from i to n-1. 
+
+The space complexity is O(N) for the recursion stack, as the recursion explores each element in the array. The space complexity is optimized compared to the previous approach as it doesn't use additional temporary vectors in each recursive call.
 
 # [22. Generate Parentheses](https://leetcode.com/problems/generate-parentheses/description/)
 ## Approach ->
@@ -725,9 +787,33 @@ public:
 };
 ```
 # [51. N-Queens](https://leetcode.com/problems/n-queens/description/)
-## [Approaches](https://takeuforward.org/data-structure/n-queen-problem-return-all-distinct-solutions-to-the-n-queens-puzzle/)
-
+### Approach 1 ->
+The N-Queens problem requires placing N queens on an N x N chessboard such that no two queens attack each other. Queens can attack horizontally, vertically, or diagonally. The goal is to find all possible valid configurations.
 ---
+
+Intuition: 
+Place Queens Column by Column:
+Start from the first column and try placing a queen in each row of that column. For each placement, check if it's valid (no conflicts with previously placed queens). Since we are placing the queens column by column, hence we need not check on the right side of the board or the same column for another queen, we just have to check the left side i.e. Left, Upper-Left, Lower-Left.
+
+Validation Checks:
+- Left Side: Ensure no queen is present in the same row to the left.
+- Upper Diagonal: Ensure no queen is in the upper-left diagonal.
+- Lower Diagonal: Ensure no queen is in the lower-left diagonal.
+
+Backtracking:
+If a queen placement is valid, move to the next column. If no valid placement is found in a column, backtrack and try the next row in the previous column.
+
+![N-Queen 1](images/NQueen1.png)
+
+As you can see in this diagram, first we fix the column and iterate over each row and place a Q there (if it is valid to place a Q there). 
+In the diagram we have fixed column 0 and iterated over each row of this column. Then we checked if Q can be place on the particular row, if yes then we placed the Q on that row and called the recursion for the next column and when we come back we remove the Q to explore other possibilites. 
+In the above diagram all the cases for placing the Q in board[0][0] failed.
+
+![N-QUeen 2](images/NQueen2.png)
+
+In the above diagram when we placed the first queen at board[0][1], and then called the recursion for the next columns, then one of the possibilities was able to place n queens on the n*n chess board. When that happens we know that our column has moved outside of the box i.e. at index n. So that's when we can populate our answer. 
+
+
 ## Codes ->
 Code 1
 ```cpp
@@ -738,55 +824,87 @@ public:
         int r = row;
         int c = col;
         while(c>=0){
-            if(board[r][c]=='Q') return false;
-            c--;
+            if(board[r][c--]=='Q') return false;
         }
 
         // checking down-left diagonal
         r = row;  
         c = col;
         while(r<n && c>=0){
-            if(board[r][c]=='Q') return false;
-            r++;
-            c--;
+            if(board[r++][c--]=='Q') return false;
         }
         
         // checking up-left diagonal
         r = row;
         c = col;
         while(r>=0 && c>=0){
-            if(board[r][c]=='Q') return false;
-            r--;
-            c--;
+            if(board[r--][c--]=='Q') return false;
         }
         return true;
     }
-    void helper(int col, vector<string> &board, vector<vector<string>> &ans, int n){
+    void helper(int col, vector<string> board, vector<vector<string>> &ans, int n){
+        // Base case: All queens placed successfully
         if(col == n){
             ans.push_back(board);
             return;
         }
 
+        // Try placing queen in each row of the current column if the position is valid
         for(int row=0; row<n; row++){
             if(isValid(row, col, n, board)){
-                board[row][col]='Q';
-                helper(col+1, board, ans, n);
-                board[row][col]='.';
+                board[row][col]='Q'; // Place Q
+                helper(col+1, board, ans, n); // Recursion call for next column
+                board[row][col]='.'; // Remove Q
             }
         }
     }
     vector<vector<string>> solveNQueens(int n) {
         vector<vector<string>> ans;
-        vector<string> board(n);
-        string s (n, '.');
+        vector<string> board(n); // Initialize a board of size n
+        string s (n, '.'); // The board will have the string of size n on every position
         for(int i=0; i<n; i++) board[i]=s;
         helper(0, board, ans, n);
         return ans;
     }
 };
 ```
+### Time and space complexity->
+Time Complexity: O(N! * N)
+Reason:
+- Branching Factor: For the first column, there are N choices, for the next column at most N-1, and so on. Total there are N columns. This leads to roughly N! configurations.
+- Validation: For each configuration, we perform O(N) checks (worst-case) to validate queen placement.
+Total: O(N! * N).
 
-Code 2
+Space Complexity: O(N²)
+Reason:
+- The chessboard (board) is N x N.
+- Recursion depth is N (one level per column). But it is negligible infront of N*N so we can ignore it.
+
+### Approach 2 (Optimized)->
+We ask ourselves — "Can we reduce the time it takes to check whether placing a queen is valid?"
+Instead of scanning the board again and again in isValid function, what if we store whether a row or diagonal that already has a queen using separate arrays?
+This way, we can check if a position is valid in just O(1) time.
+
+Let's observe something here..
+![NQueen3](images/NQueen3.png)
+NOTE: (just see the diagram here, the things written in the diagram itself if false, just focus on the explanation from my notes and the diagram from the picture)
+This is the diagram for checking in the left and lower diagonal. For checking in the left, just make a 1D array of size n, and simply mark left[row] = 1 when a queen is placed — then we can directly check if a queen already exists in that row.
+
+For the lower diagonal, make a 1D array of size 2n - 1. This represents all possible (row + col) values on an n x n board, since row + col ranges from 0 to 2n - 2. As you can observe in the diagram, for every diagonal in the lower left, if we add the row and column, the value remains the same — so we can utilize that index in the array to check if a queen exists on that diagonal.
+
+![NQueen4](images/NQueen4.png)
+This is the diagram for checking in the top left diagonal. This follows the formula (n-1)+(col-row) for each position in the diagonal.
+
+In Approach 1, we manually looped through each direction (left, upper-left diagonal, and lower-left diagonal) to check for the presence of a queen. However, this costs O(N) time per validation, which becomes expensive as N grows.
+
+In Approach 2, using these pre-computed arrays for:
+- left[row]
+- lowerDiagonal[row + col]
+- upperDiagonal[n - 1 + col - row]
+we reduce the validation step to just O(1) time per position.
+
+So now the only costly operation is exploring all valid board configurations (which is unavoidable since the number of solutions is exponential). But each queen placement is now much faster.
+
 ```cpp
 class Solution {
 public:
@@ -796,14 +914,22 @@ public:
             return;
         }
 
+        // Try placing a queen in every row of the current column
         for(int row=0; row<n; row++){
+            // Check if the current row and diagonals are free to place a queen
             if(leftrow[row]==0 && upperDiagonal[n-1+col-row]==0 && lowerDiagonal[row+col]==0){
+                // Place the queen
                 board[row][col]='Q';
+                // Mark the row and diagonals as occupied
                 leftrow[row]=1;
                 upperDiagonal[n-1+col-row]=1;
                 lowerDiagonal[row+col]=1;
+
+                // Recurse for the next column
                 helper(col+1, board, ans, n, leftrow, upperDiagonal, lowerDiagonal);
-                board[row][col]='.'; // backtract to reset
+
+                // Backtrack: remove the queen and unmark the positions
+                board[row][col]='.'; 
                 leftrow[row]=0;
                 upperDiagonal[n-1+col-row]=0;
                 lowerDiagonal[row+col]=0;
@@ -815,19 +941,122 @@ public:
         vector<string> board(n);
         string s (n, '.');
         for(int i=0; i<n; i++) board[i]=s;
-        vector<int>leftrow(n, 0);
-        vector<int> upperDiagonal(2*n-1, 0);
-        vector<int> lowerDiagonal(2*n-1, 0);
+
+        vector<int>leftrow(n, 0); // // Tracks rows with queens
+        vector<int> upperDiagonal(2*n-1, 0); // Tracks upper-left diagonals
+        vector<int> lowerDiagonal(2*n-1, 0); // Track bottom-left diagonals
         helper(0, board, ans, n, leftrow, upperDiagonal, lowerDiagonal);
         return ans;
     }
 };
 ```
+### Time and space complexity:
+Time Complexity: O(N!)
+Space Complexity: O(N²)
 
 # [131. Palindrome Partitioning](https://leetcode.com/problems/palindrome-partitioning/)
 
-## [Approach](https://takeuforward.org/data-structure/palindrome-partitioning/)
-Note that here we need to partition the string, so this is how we partition. Remember this pattern for further partitioning questions.
+## Intuition->
+We need to partition a string such that every substring in the partition is a palindrome. Return all possible palindrome partitions.
+
+Example: For "aab", valid partitions are ["a","a","b"] and ["aa","b"].
+
+Intuitive Approach:
+- Backtracking: We'll explore all possible partitions using backtracking.
+- Palindrome Check: At each step, we check if the current substring is a palindrome.
+- Recursive Exploration: If it is a palindrome, we add it to our current path temp and recursively explore partitions for the remaining string.
+
+What exactly to do:
+- We fix a starting index that represents where our current partition begins.
+- Then we run a loop using i from that fixed index to the end of string. For each possible position of i (from index to end of string):
+    - Check if substring s[index to i] is a palindrome
+    - If yes, add it to current partition temp and recursively process the remaining string with our new index as i+1.
+- Backtrack by removing the last added substring to explore other possibilities
+
+Let us look at this recursive tree and try to dry run it to understand..
+![Recursive tree](images/PalindromePartitioning.png)
+
+
+### 🔍 Input: `"aab"`
+
+We want to find all ways to split this string such that every substring in a split is a **palindrome**.
+
+---
+
+### 📌 Step-by-step Dry Run (Using Backtracking Tree in Image):
+
+---
+
+####  Level 0
+
+* Start at index `0` (`idx = 0`)
+* Try all substrings starting from idx to i:
+
+  * `"a"` (from 0 to 0) → ✅ Palindrome
+
+    * `curr = ["a"]` → Go deeper
+  * `"aa"` (from 0 to 1) → ✅ Palindrome
+
+    * `curr = ["aa"]` → Go deeper
+  * `"aab"` (from 0 to 2) → ❌ Not a palindrome → Pruned
+
+---
+
+####  Level 1: Left branch from `"a"`
+
+* Now `idx = 1` (after adding first `"a"`)
+* Try:
+
+  * `"a"` (from 1 to 1) → ✅ Palindrome
+
+    * `curr = ["a", "a"]` → Go deeper
+
+---
+
+####  Level 2: Left branch from \["a", "a"]
+
+* Now `idx = 2`
+* Try:
+
+  * `"b"` (from 2 to 2) → ✅ Palindrome
+
+    * `curr = ["a", "a", "b"]` → ✅ End of string → Add to answer
+
+🧾 First Valid Answer: `["a", "a", "b"]`
+
+⬅️ Backtrack (pop `"b"` → `"a", "a"`)
+
+⬅️ Backtrack again (pop second `"a"` → `"a"`)
+
+---
+
+####  Level 1: Right branch from `"aa"`
+
+* Now `idx = 2`
+* Try:
+
+  * `"b"` (from 2 to 2) → ✅ Palindrome
+
+    * `curr = ["aa", "b"]` → ✅ End → Add to answer
+
+🧾 Second Valid Answer: `["aa", "b"]`
+
+⬅️ Backtrack (pop `"b"` → `"aa"`)
+
+⬅️ Backtrack again (pop `"aa"` → `[]`)
+
+---
+
+### Final Result:
+
+All possible palindromic partitions of `"aab"` are:
+
+```
+[["a", "a", "b"], ["aa", "b"]]
+```
+Look at this recursive tree for another example.. Try to understand this -> 
+![Recursive tree 2](images/PalindromePartitioning2.png)
+---
 
 ## Code ->
 ```cpp
@@ -845,10 +1074,11 @@ public:
             return;
         }
 
+        // Fix the idx and go from idx to last character in the array
         for(int i=idx; i<s.size(); i++){
-            if(isPalindrome(idx, i, s)){ // if the substring from start to end is palindrome
-                temp.push_back(s.substr(idx, i-idx+1)); // push substring start to end in temp
-                helper(s, ans, temp, i+1); // call recursion to find other partitions
+            if(isPalindrome(idx, i, s)){ // if the substring from idx to i is palindrome
+                temp.push_back(s.substr(idx, i-idx+1)); // push substring idx to i in temp
+                helper(s, ans, temp, i+1); // call recursion to find other partitions, with new idx as i+1
                 temp.pop_back(); // reset temp
             }
         }
@@ -863,11 +1093,35 @@ public:
 };
 ```
 
+### Time and Space Complexity:
+Time Complexity: O( (2^n) *k*(n/2) )
+
+Reason: O(2^n) to generate every substring and O(n/2)  to check if the substring generated is a palindrome. O(k) is for inserting the palindromes in another data structure, where k  is the average length of the palindrome list.
+
+Space Complexity: O(k * x) + O(n)
+
+Reason: The space complexity can vary depending upon the length of the answer. k is the average length of the list of palindromes and if we have x such list of palindromes in our final answer. The depth of the recursion tree is n, so the auxiliary space required is equal to the O(n). So overall SC ->  O(k * x) + O(n)
+
 # [17. Letter Combinations of a Phone Number](https://leetcode.com/problems/letter-combinations-of-a-phone-number/description/)
 
 ## Approach ->
-Make a mapping for all the numbers. Extract the alphabets from given digit one by one and for every letter for a given digit, call the recursive function.
-[Recursive tree](https://www.youtube.com/watch?v=vgnhZzw-kfU)
+
+![Recursive tree](images/LetterCombination.png)
+
+This is a classic backtracking problem where we:
+
+- Fix a position (digit) in the input string
+- Explore all letters mapped to that digit
+- Recursively build combinations by moving to the next digit
+
+Steps:
+- Base Case: When we've processed all digits (idx == digits.size()), we add the current combination to the result.
+
+- Recursive Case: Get the current digit (at fixed idx) and store its corresponding alphabetical letters.
+- For each letter:
+    - Append it to the current combination. 
+    - Recurse to the next digit using recursion with idx+1.
+    - Backtrack by removing the last added letter (to explore other combinations)
 
 ## Code ->
 ```cpp
@@ -883,6 +1137,14 @@ public:
 
         for(int i=0; i<curStr.size(); i++)
             helper(digits, digitMapping, temp+curStr[i], idx+1, ans); // recursive call for next index and temp+curStr[i]
+
+        // alternatively for above step you can do this -
+        // for(int i=0; i<curStr.size(); i++){
+        //     temp += curStr[i];
+        //     helper(digits, digitMapping, temp, idx+1, ans);
+        //     temp.pop_back();
+        // }
+            
     }
     vector<string> letterCombinations(string digits) {
         vector<string> ans; // declare answer to return
@@ -896,50 +1158,62 @@ public:
 # [216. Combination Sum III](https://leetcode.com/problems/combination-sum-iii/description/)
 
 ## Approach ->
-Generate all combinations of length k from the set {1, 2, ..., 9}, and filter those combinations where the sum equals the target n.
+![Combination Sum 3 recursive Diagram](images/CombinationSum3.png)
 
----
-## Code ->
+## Key Insights
+1. **Backtracking Approach**: We'll systematically explore all possible combinations using recursion and backtracking.
+2. **Early Termination**: If the current sum exceeds `n`, we can stop exploring that path.
+3. **Unique Combinations**: By always moving forward in the number sequence (1-9), we avoid duplicate combinations.
+
+## Solution Approach
+1. Start from number 1, try including it in the combination.
+2. Recurse for the next number (i+1) to avoid reusing numbers.
+3. If the current combination length becomes k, check if the sum is n. If yes, store it.
+4. Use backtracking to remove the last added number and explore other options.
+
+## Code->
 ```cpp
-#include <vector>
-
 class Solution {
 public:
-    // Helper function to find combinations
-    void helper(int k, int n, vector<vector<int>> &ans, vector<int> temp, int sum, vector<int> &hash, int idx) {
-        // if the sum exceeds the target or the size of the combination is reached
-        if (sum > n) return;
-        if (temp.size() == k) {
-            // If the combination size is k and the sum is n, add it to the answer
-            if (sum == n)
-                ans.push_back(temp);
+    void helper(int k, int n, vector<vector<int>>& ans, vector<int>& temp, int num, int sum) {
+        // Prune invalid paths early (sum exceeds target)
+        if(sum > n) return;
+        
+        // Valid combination found
+        if(temp.size() == k) {
+            if(sum == n) ans.push_back(temp);
             return;
         }
-
-        // Iterate through numbers starting from idx
-        for (int i = idx; i <= 9; i++) {
-            // If the number is not used in the current combination
-            if (hash[i] == 0) {
-                // Add the number to the combination
-                temp.push_back(i);
-                hash[i] = 1; // Mark the number as used
-                // Recursively call the helper function with updated parameters
-                helper(k, n, ans, temp, sum + i, hash, i + 1);
-                temp.pop_back(); // Backtrack: remove the last added number
-                hash[i] = 0;    // Mark the number as unused for the next iteration
-            }
+        
+        // Explore all possible numbers from current position to 9
+        for(int i = num; i <= 9; i++) {
+            temp.push_back(i);  // Include current number
+            sum += i;
+            
+            // Recurse with next number to ensure uniqueness
+            helper(k, n, ans, temp, i + 1, sum);
+            
+            // Backtrack
+            temp.pop_back();
+            sum -= i;
         }
     }
-
+    
     vector<vector<int>> combinationSum3(int k, int n) {
         vector<vector<int>> ans;
         vector<int> temp;
-        vector<int> hash(10, 0);
-        helper(k, n, ans, temp, 0, hash, 1);
+        helper(k, n, ans, temp, 1, 0);  // Start with number 1 and sum 0
         return ans;
     }
-}
+};
 ```
+### Time and Space complexity:
+Time Complexity: The number of combinations is C(9,k) = 9!/(k!(9-k)!), and for each combination we do O(1) work (pushing to result).
+
+Space Complexity:
+- Recursion stack goes up to depth k → O(k)
+- Output contains C(9,k) combinations, each of size k → O(k * C(9,k))
+
 
 # [79. Word Search](https://leetcode.com/problems/word-search/description/)
 
@@ -962,6 +1236,7 @@ That is, we have to somehow keep track of our position so that we cannot find th
 
 In this approach, we are going to mark visited cells with some random character that will prevent us from revisiting them again and again.
 
+Special note: We have to return the final result vector in lexicographically smallest order. So we will always have our recursive calls in that order i.e. 'D' < 'L' < 'R' < 'U' if the question says so. 
 ---
 ## Code ->
 ```cpp
@@ -1008,44 +1283,62 @@ public:
 ## Approach ->
 It is failry simple. ATQ the answer should be in lexicographically sorted order, so we will keep that in mind. We also cannot visit a path that has 0 on it, so we will have to keep that in mind too. Keeping these two things in mind we make our recursive calls.
 
+Note: We have to return the final result vector in lexicographically smallest order. So we will always have our recursive calls in that order i.e. 'D' < 'L' < 'R' < 'U' if the question says so. 
+
 ## Code ->
 ```cpp
-class Solution{
-    public:
-    void helper(vector<vector<int>>&m, int n, vector<string> &ans, string s, int row, int col){
-        // If the destination is reached, add the current path to the result
-        if(row==n-1 && col==n-1){
+class Solution {
+public:
+    void helper(vector<vector<int>> &maze, vector<string> &ans, string s, int i, int j) {
+        int n = maze.size();
+        if(i == n-1 && j == n-1) {
             ans.push_back(s);
             return;
         }
         
-        // Check for out-of-bounds or obstacles(0 on any index) in the matrix
-        if(row<0 || col<0 || row>=n || col>=n || m[row][col]!=1) return;
+        // Check bounds and validity
+        if(i < 0 || i >= n || j < 0 || j >= n || maze[i][j] == 0) {
+            return;
+        }
         
-        // Mark the current cell as visited
-        m[row][col]=2;
-        // Recursion call in all four directions in lexicographical order
-        helper(m, n, ans, s+'D', row+1, col);
-        helper(m, n, ans, s+'L', row, col-1);
-        helper(m, n, ans, s+'R', row, col+1);
-        helper(m, n, ans, s+'U', row-1, col);
-        // Backtrack: Mark the current cell as unvisited
-        m[row][col]=1;
+        maze[i][j] = 0; // Mark as visited
+        
+        // Explore in lexicographical order: D, L, R, U
+        helper(maze, ans, s+'D', i+1, j);
+        helper(maze, ans, s+'L', i, j-1);
+        helper(maze, ans, s+'R', i, j+1);
+        helper(maze, ans, s+'U', i-1, j);
+        
+        maze[i][j] = 1; // Backtrack
     }
-    vector<string> findPath(vector<vector<int>> &m, int n) {
+    
+    vector<string> ratInMaze(vector<vector<int>>& maze) {
         vector<string> ans;
-        // Important base condition
-        if (m[0][0] == 0 || m[n - 1][n - 1] == 0) {
-            // If the source or destination is blocked, return -1
-            ans.push_back("-1");
+        int n = maze.size();
+        // If the first or last cells are 0, return empty ans.
+        if(n == 0 || maze[0][0] == 0 || maze[n-1][n-1] == 0) {
             return ans;
         }
         
-        helper(m, n, ans, "", 0, 0);
-        return ans; 
+        helper(maze, ans, "", 0, 0);
+        return ans;
     }
 };
 ```
+
+### Time and Space Complexity:
+Time Complexity: O(4^(n²)):
+- At each cell, we can potentially move in 4 directions: Down, Left, Right, Up.
+- In the worst case, the rat could visit every cell in the n x n grid.
+
+So, for each of the n² cells, we may explore up to 4 directions, leading to an upper bound of: 
+O(4^(n²))
+
+Space Complexity: O(n²):
+- Call Stack: In the worst case, the recursive call stack can go as deep as the number of cells in the maze, i.e., O(n²).
+- Visited Marking: The maze itself is reused to mark visited cells (maze[i][j] = 0 and backtracked with = 1), so no extra space is needed for a visited array.
+- Result Storage: In the worst case, we may store all possible paths, each of max length 2n-2 (in case of full path from start to end), so: O(k* 2n). But this is very minimal. So we can ignore it.
+
 
 # [37. Sudoku Solver](https://leetcode.com/problems/sudoku-solver/description/)
 
@@ -1106,11 +1399,14 @@ public:
     }
 };
 ```
+Time Complexity: O(9^(n ^ 2)), in the worst case, for each cell in the n2 board, we have 9 possible numbers.
+
+Space Complexity: O(1), since we are refilling the given board itself, there is no extra space required, so constant space complexity.
 
 # [1849. Splitting a String Into Descending Consecutive Values](https://leetcode.com/problems/splitting-a-string-into-descending-consecutive-values/description/)
 
 ## Approach ->
-As we are required to split the string in such a way that all the splits should have numbers in a decreasing manner (just by 1) so in the main function we can iterate through the entire string and call a recursive function helper for the first split. Inside the helper function, we check if the current substring, formed by converting a portion of the input string to a numerical value, is one less than the previous value. If this condition is met, the function is recursively called on the remaining portion of the string, exploring all possible valid splits.
+As we are required to split the string in such a way that all the splits should have numbers in a decreasing manner (just by 1) so in the main function we can iterate through the entire string and call a recursive function helper for the first split. Inside the helper function, we check if the current substring, formed by converting a portion of the input string to a numerical value, is one less than the previous value. If this condition is met, the function is recursively called on the remaining portion of the string, exploring all possible valid splits. We split the string in the same way of how we performed the split earlier - fix the idx and check for elements ahead of it.
 
 ---
 ## Code ->
@@ -1160,24 +1456,38 @@ public:
 
 # [77. Combinations](https://leetcode.com/problems/combinations/description/)
 
-## Code ->
+## Intuition
+The problem requires generating all possible combinations of size `k` from numbers `1` to `n`. Combinations are different from permutations in that the order doesn't matter ([1,2] is the same as [2,1]).
+
+Both approaches use backtracking to explore all possible combinations:
+1. **Take/Not-take approach**: At each step, we decide whether to include the current number or not.
+2. **Loop approach**: We iterate through all possible numbers at each step, effectively making the same decisions as take/not-take but in a more compact form.
+
+## Approach 1: Take/Not-take
+- **Base Case**: When the current combination size equals `k`, add it to the result.
+- **Take**: Include the current number and recurse with the next number.
+- **Not-take**: Exclude the current number and recurse with the next number.
+
+### Code
 ```cpp
-// figure out on yourself first kiddo, you've done these kinds of patterns.
 class Solution {
 public:
-    void helper(int n, int k, vector<vector<int>> &ans, vector<int> temp, int idx){
-        if(temp.size()==k){
+    void helper(int n, int k, vector<vector<int>>& ans, vector<int>& temp, int start) {
+        if(temp.size() == k) {
             ans.push_back(temp);
             return;
         }
+        if(start > n) return;
 
-        for(int i=idx; i<=n; i++){
-            temp.push_back(i);
-            helper(n, k, ans, temp, i+1);
-            temp.pop_back();
-        }
-        return;
+        // Take the current number
+        temp.push_back(start);
+        helper(n, k, ans, temp, start + 1);
+
+        // Not take the current number
+        temp.pop_back();
+        helper(n, k, ans, temp, start + 1);
     }
+
     vector<vector<int>> combine(int n, int k) {
         vector<vector<int>> ans;
         vector<int> temp;
@@ -1186,111 +1496,229 @@ public:
     }
 };
 ```
-# [1239. Maximum Length of a Concatenated String with Unique Characters](https://leetcode.com/problems/maximum-length-of-a-concatenated-string-with-unique-characters/description/)
 
-## Code ->
+## Approach 2: Using Loop
+### Explanation
+- **Base Case**: Same as above.
+- **Loop**: For each number from `start` to `n`, include it in the combination, recurse with the next number, then backtrack (remove it).
+
+### Code
 ```cpp
 class Solution {
 public:
-    // Helper function to check if a string has unique characters
-    bool isValid(string curStr, vector<int> &selected) {
-        // Self-check for unique characters in the string
-        vector<int> selfCheck(26, 0);
-        for (int i = 0; i < curStr.size(); i++) {
-            if (selfCheck[curStr[i] - 'a'] == 1) return false;
-            selfCheck[curStr[i] - 'a'] = 1;
+    void helper(int n, int k, vector<vector<int>>& ans, vector<int>& temp, int start) {
+        if(temp.size() == k) {
+            ans.push_back(temp);
+            return;
+        }
+        if(start > n) return;
+
+        // Call recursion for each number from 1 to n
+        for(int i = start; i <= n; i++) {
+            temp.push_back(i);
+            helper(n, k, ans, temp, i + 1);
+            temp.pop_back(); // remove the element while backtracking
+        }
+    }
+
+    vector<vector<int>> combine(int n, int k) {
+        vector<vector<int>> ans;
+        vector<int> temp;
+        helper(n, k, ans, temp, 1);
+        return ans;
+    }
+};
+```
+
+
+### Time Complexity
+- **O(2^n)**: In the worst case, we're making 2 choices (take/not-take) for each of n numbers.
+- However, since we stop when the combination size reaches k, it's actually O(C(n,k) * k), where C(n,k) is the binomial coefficient. Hence, 
+**Time Complexity: O(C(n, k) * k)**
+- There are C(n, k) combinations. Formula of C(n, k) = n! / (k! * (n - k)!)
+- Each combination takes O(k) time to build/copy.
+
+### Space Complexity
+- **O(k)**: The maximum depth of the recursion stack is k (when temp.size() == k).
+
+## Key Insight
+Both approaches are fundamentally the same:
+- **Take/Not-take**: Explicitly shows the two choices (include/exclude the current number).
+- **Loop**: Implicitly does the same thing by iterating through all possible numbers to include next.
+
+--- 
+
+# [1239. Maximum Length of a Concatenated String with Unique Characters](https://leetcode.com/problems/maximum-length-of-a-concatenated-string-with-unique-characters/description/)
+
+## Intuition:
+
+This problem is clearly a **Select / Not-Select** type recursion.
+
+We maintain a temporary string `s` that stores our current concatenated string. For each index, we make two choices:
+
+1. **Select** the string at index `i` and move to the next.
+2. **Don't select** it and move to the next.
+
+eg. For arr = ["un","iq","ue"], we can either select "un" and put it inour string s, or not select "un" and not put it in our string s.
+
+At the end in base case, we calculate the length of the temporary string `s`, and update our answer with the **maximum length found so far**.
+
+But there’s a twist:
+
+* Before selecting an index, we must **check if it’s valid** to select:
+
+  * The string at that index (`arr[idx]`) should have **unique characters**. eg. We cannot select "aa" because "aa" itself is not unique.
+  * The string should also **not contain any characters already in `s`** (i.e., the merged string should remain unique).
+
+So at each recursive step:
+
+* We check if it’s valid to select `arr[idx]`.
+* If yes, we move ahead with the string included.
+* In another recursion call, we skip it regardless. 
+
+---
+
+## Steps / Algorithm:
+
+1. Define a helper function with parameters: current index `idx`, current string `s`, and `ans` (reference to maximum length found so far).
+2. Base case: if `idx == arr.size()`, update `ans` with `max(ans, s.size())` and return.
+3. Before selecting `arr[idx]`, check:
+
+   * If it has duplicate characters (e.g., `'aa'`).
+   * If it shares any characters with current `s`.
+4. If valid, make recursive call with `s + arr[idx]` (select).
+5. Always make a recursive call without including `arr[idx]` (not-select).
+6. Return final `ans`.
+
+---
+
+## Code:
+
+```cpp
+class Solution {
+public:
+    // Check if arr[idx] is valid to add to s
+    bool isValid(vector<string> &arr, string s, int idx) {
+        string cur = arr[idx];
+        // Make a frequency vector for arr[idx]
+        vector<int> curFreq(26, 0);
+        
+        // 1. Check if cur has duplicates
+        for(char ch : cur) {
+            if(++curFreq[ch - 'a'] > 1)
+                return false;
         }
 
-        // Check if the characters in the string are already selected
-        for (int i = 0; i < curStr.size(); i++) {
-            if (selected[curStr[i] - 'a'] == 1) return false;
+        // 2. Check if cur overlaps with s
+        for(char ch : s) {
+            if(curFreq[ch - 'a'] > 0)
+                return false;
         }
 
         return true;
     }
 
-    // Recursive helper function to explore all possible combinations
-    int helper(vector<string> &arr, int &ans, int idx, vector<int> &selected) {
-        // If we reach the end of the array, return the current answer
-        if (idx == arr.size()) {
-            return ans;
+    // Recursive helper function
+    void helper(vector<string> &arr, string s, int &ans, int idx) {
+        if(idx == arr.size()) {
+            ans = max(ans, (int)s.size());
+            return;
         }
 
-        // Get the current string
-        string curStr = arr[idx];
+        // Select
+        if(isValid(arr, s, idx))
+            helper(arr, s + arr[idx], ans, idx + 1);
 
-        // If the current string is not valid, move to the next index
-        if (isValid(curStr, selected) == false) {
-            return helper(arr, ans, idx + 1, selected);
-        } else {
-            // Mark characters in the current string as selected
-            for (int i = 0; i < curStr.size(); i++) selected[curStr[i] - 'a'] = 1;
-            // Update the answer by adding the length of the current string
-            ans += curStr.size();
-            // Recursively explore with the current string selected
-            int op1 = helper(arr, ans, idx + 1, selected);
-
-            // Backtrack: Mark characters in the current string as not selected
-            for (int i = 0; i < curStr.size(); i++) selected[curStr[i] - 'a'] = 0;
-            // Backtrack: Subtract the length of the current string from the answer
-            ans -= curStr.size();
-            // Recursively explore without selecting the current string
-            int op2 = helper(arr, ans, idx + 1, selected);
-
-            // Return the maximum of the two options
-            return max(op1, op2);
-        }
+        // Not select
+        helper(arr, s, ans, idx + 1);
     }
 
-    // Main function to find the maximum length of a concatenated string with unique characters
     int maxLength(vector<string>& arr) {
         int ans = 0;
-        vector<int> selected(26, 0);
-        return helper(arr, ans, 0, selected);
+        helper(arr, "", ans, 0);
+        return ans;
     }
 };
 ```
 
-# [93. Restore IP Addresses](https://leetcode.com/problems/restore-ip-addresses/description/)
+---
 
-## Code ->
+## Time & Space Complexity:
+
+* **Time Complexity**: `O(2^n * L)`, where `n = arr.size()` and `L = max length of any string` — due to recursion and validity checking.
+* **Space Complexity**: `O(n * L)` — recursion stack and string building.
+
+---
+
+
+# [93. Restore IP Addresses](https://leetcode.com/problems/restore-ip-addresses/description/)
+![Restore IP Recursion Diagram](images/RestoreIP.png)
+
+## **Intuition**
+An IP address must consist of exactly four parts (each between 0 and 255) separated by dots. The key idea is to **backtrack** through the string, trying all possible ways to split it into four valid segments while ensuring:
+1. No leading zeros (unless the segment is "0").
+2. Each segment is ≤ 255.
+3. All digits are used exactly once.
+So we can do one thing here, as seen in the recursion tree above, we can pick either next digit, next two digits or next three digits. But make sure to pick them in our recursion call with the checks mentioned above (and also the check that we have those many digits left in the given string). We keep track of: The current index in the string, the temporary IP address being constructed, and the number of segments formed so far.
+If we reach the end of the string with exactly 4 segments, we add the constructed IP to our result.
+
+Early Optimization:
+If the string length exceeds 12, it’s impossible to form a valid IP (since each of the 4 segments can have at most 3 digits).
+
+## **Approach**
+1. **Base Case**: If we've used all digits (`idx == s.size()`) and formed exactly 4 parts (`parts == 4`), we add the IP to the result after removing the trailing dot.
+2. **Recursive Case**:
+   - Try taking **1-digit** (`s[idx]`), **2-digit** (`s[idx..idx+1]`), or **3-digit** (`s[idx..idx+2]`) segments.
+   - Ensure the segment is valid (no leading zeros unless it's "0" and ≤ 255).
+   - Recurse with the next index (`idx + 1,2,or3`) and increment the part count (`parts + 1`).
+3. **Early Termination**: If the string length exceeds 12, it's impossible to form a valid IP (since each of the 4 parts can have at most 3 digits).
+
+### **Solution Code**
 ```cpp
 class Solution {
 public:
-void helper(string& s, int i, int dots, string res, vector<string>& ans) {
-        // Base case: If four parts are formed, and the entire string is processed
-        if (dots == 4 && i == s.length()) {
-            // Add the valid IP address to the result
-            ans.push_back(res.substr(0, res.length() - 1)); // Remove the trailing dot
-            return;
-        }
-
-        // If more than 4 parts are formed, or if the string is not fully processed, return
-        if (dots > 4) {
-            return;
-        }
-
-        // Explore all possible parts by considering substrings of length 1 to 3
-        for (int j = i; j < min(i + 3, static_cast<int>(s.length())); ++j) {
-            // Convert the substring to an integer
-            int currnum = stoi(s.substr(i, j - i + 1));
-
-            // Check if the part is less than or equal to 255 and does not have leading zeros
-            if (currnum <= 255 && (i == j || s[i] != '0')) {
-                // Recursively call the helper function with the updated parameters
-                helper(s, j + 1, dots + 1, res + s.substr(i, j - i + 1) + ".", ans);
-            }
-        }
+    // Checks if a segment is valid:
+    // - No leading zeros unless it's "0"
+    // - Numeric value ≤ 255
+    bool isValid(string check){
+        if(check[0]=='0') return false; // Leading zeros invalid
+        int val = stoi(check);
+        return val <= 255; // Must be ≤ 255
     }
 
+    void helper(string s, vector<string> &ans, int idx, string temp, int parts){
+        // If all digits used and 4 parts formed, add to result
+        if(idx==s.size() && parts==4){
+            temp.pop_back();
+            ans.push_back(temp);
+            return;
+        }
+
+        // Try 1-digit segment
+        if(idx+1<=s.size()) 
+            helper(s, ans, idx+1, temp+s[idx]+'.', parts+1);
+        
+        // Try 2-digit segment
+        if(idx+2<=s.size() && isValid(s.substr(idx, 2))) 
+            helper(s, ans, idx+2, temp+s.substr(idx, 2)+'.', parts+1);
+
+        // Try 3-digit segment
+        if(idx+3<=s.size() && isValid(s.substr(idx, 3))) 
+            helper(s, ans, idx+3, temp+s.substr(idx, 3)+'.', parts+1);
+    }
     vector<string> restoreIpAddresses(string s) {
         vector<string> ans;
-        helper(s, 0, 0, "", ans);
+        if(s.size()>12) return ans; // Early exit if too long
+        helper(s, ans, 0, "", 0);
         return ans;
     }
-
 };
 ```
+
+### **Complexity Analysis**
+- **Time Complexity**: **O(3^4)** → Since at each step, we have up to 3 choices (1, 2, or 3 digits), and we do this for 4 segments. In practice, it's much less due to early pruning.
+- **Space Complexity**: **O(1)** (excluding output storage) since we use recursion with a maximum depth of 4.
+
 
 # [473. Matchsticks to Square](https://leetcode.com/problems/matchsticks-to-square/description/)
 ## Approaches ->

@@ -1,4 +1,5 @@
-## WHAT I LEARNT FOR DATA STRUCTURES AND ALGORITHMS INTERVIEWS
+## DSA-Cheat-Sheet
+
 New questions everyday :)
 
 Please star the repo ⭐ 

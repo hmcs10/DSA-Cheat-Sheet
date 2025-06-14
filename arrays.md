@@ -826,7 +826,43 @@ public:
 ## Approaches ->
 - Brute force - O(N^4)
 - Sort the array. Run 3 for loops and then find the 4th element by finding it using binary search. - O(log N . N^3)
-- Sort the array. Run 2 for loops and then apply 3sum wali chiz to find the remaining two elements, i.e. place start at j+1 and place end at nums[size]-1 and then increment decrement as required. CATCH - IN THIS METHOD YOU WILL ENCOUNTER INTEGER OVERFLOW IF YOU CHECK THE IF CONDITIONS LIKE THIS - nums[i]+nums[j]+nums[start]+nums[end]. SO INSTEAD OF THAT, FIND TARGET2 BY SUBTRACTING TWO ELEMENTS FROM TARGET AND THEN CHECK THE IF CONDITIONS FOR TWO NUMBERS ONLY. REFER THE CODE TO UNDERSTAND.
+- This problem is an extension of 3Sum, which in turn extends 2Sum. The core strategy remains the two-pointer technique, but adapted for four numbers.
+
+Key Steps:
+- Fixing two numbers using two for-loops (i and j).
+- Then using the two-pointer technique on the remaining part of the array (left and right).
+This gives us better performance while also allowing us to efficiently skip duplicates. Look at the pointer placement in the diagram below.
+
+![4sum](images/4sum.png)
+
+Read the approach carefully, specially the "3. Skip Duplicates for i and j".
+
+Approach->
+
+1. Sort the Array: Sorting is important because it makes skipping duplicates easier and reliable.
+
+2. Fix Two Numbers (i and j): i goes from 0 to n-4 and j goes from i+1 to n-3. This ensures we leave enough room for the other two elements (left and right).
+
+3. Skip Duplicates for i and j: We don’t want to re-check combinations that we have already considered.
+
+For i, use: if(i > 0 && nums[i] == nums[i-1]) continue;
+
+For j, use: if(j > i+1 && nums[j] == nums[j-1]) continue;
+
+📌 Explanation:
+Take nums = [1,1,1,2,2,3,4]. If we fix i = 0, we don’t want to consider i = 1 or i = 2 because it's the same number as before (1). Similarly for j. But we must not skip the first occurrence, so use i > 0 and j > i+1 respectively.
+
+Explanation: j starts from 2nd index, which has element 1. But according to the logic of skip if nums[j]==nums[j-1], this 1 will be skipped. That's why we are using hte j>i+1 in the check first.
+
+4. Apply Two-Pointer Search
+left = j + 1, right = n - 1
+
+5. Skip Duplicates for left and right
+After finding a valid quadruplet, move left and right while skipping over duplicates:
+
+while(left < right && nums[left] == nums[left - 1]) left++;
+
+while(left < right && nums[right] == nums[right + 1]) right--;
 
 ---
 ## Code ->
@@ -834,39 +870,54 @@ public:
 class Solution {
 public:
     vector<vector<int>> fourSum(vector<int>& nums, int target) {
-        vector <vector <int>> ans;
+        vector<vector<int>> ans;
         if(nums.size()<4) return ans;
-       
+
         sort(nums.begin(), nums.end());
-       
-        for(int i=0; i<nums.size()-3; i++){           
+        
+        // First pointer (i) runs till n - 4
+        for(int i=0; i<nums.size()-3; i++){
+            // Skip duplicates for i
+            if(i && nums[i]==nums[i-1]) continue;
+            // Second pointer (j) starts from i + 1 and runs till n - 3
             for(int j=i+1; j<nums.size()-2; j++){
-               
-                int st = j+1;
-                int en = nums.size()-1;
-           
-                // we find target 2 to avoid overflow of integer while we find the sum of all the values of a possible quadruplets.
-                int target2 = target - nums[i] - nums[j];
-               
-                while(st<en){
-                    if(( nums[st] + nums[en]) == target2){
-                        ans.push_back({nums[i], nums[j], nums[st], nums[en]});
-                       
-                        while(st<en && nums[st]==nums[st+1]) st++; // To avoid duplicate array
-                        while(st<en && nums[en]==nums[en-1]) en--;
-                        st++; en--;
+                // Skip duplicates for j except its first occurence
+                if(j>i+1 && nums[j]==nums[j-1]) continue;
+
+                int left = j+1;
+                int right = nums.size()-1;
+
+                while(left<right){
+                    // Use long long to avoid integer overflow and add one by one for the same
+                    long long sum = nums[i];
+                    sum+=nums[j];
+                    sum+=nums[left];
+                    sum+=nums[right];
+
+                    // If we found a valid quadruplet
+                    if(sum == target){
+                        ans.push_back({nums[i], nums[j], nums[left], nums[right]});
+                        left++; right--;
+                        // Skip duplicates for left and right
+                        while(left<right && nums[left]==nums[left-1]) left++;
+                        while(left<right && nums[right]==nums[right+1]) right--;
                     }
-                    else if(( nums[st] + nums[en]) > target2){
-                        en--;
+                    // If sum is greater than target, move right to get a smaller sum
+                    else if(sum>target){
+                        right--;
+                        // Skip duplicates
+                        while(left<right && nums[right]==nums[right+1]) right--;
                     }
+                    // If sum is less than target, move left to get a bigger sum
                     else{
-                        st++;
-                    }     
+                        left++;
+                        // Skip duplicates
+                        while(left<right && nums[left]==nums[left-1]) left++;
+                    }
                 }
-                while(j+1<nums.size()-2 && nums[j+1]==nums[j]) j++;
-                while(i+1<nums.size()-3 && nums[i+1]==nums[i]) i++;
             }
         }
+        
         return ans;
     }
 };
@@ -1484,3 +1535,12 @@ public:
     }
 };
 ```
+<<<<<<< HEAD
+=======
+
+Given an array/sequence of size n, possible
+
+Subarray = n*(n+1)/2
+Subseqeunce = (2^n) -1 (non-empty subsequences)
+Subset = 2^n
+>>>>>>> 06f223e (Codes and Logic updated)
