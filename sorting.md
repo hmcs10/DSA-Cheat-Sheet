@@ -8,7 +8,7 @@ First pass:
 For the first position in the sorted array, the whole array is traversed from index 0 to 4 sequentially. The first position where 64 is stored presently, after traversing whole array it is clear that 11 is the lowest value.
 Thus, replace 64 with 11. After one iteration 11, which happens to be the least value in the array, tends to appear in the first position of the sorted list.
 
-New array after first pass: arr[] = {11,     25, 12, 22, 64}
+New array after first pass: arr[] = {11, 25, 12, 22, 64}
 
 Second Pass:
 
@@ -111,7 +111,7 @@ void merge(vector<int> &arr, int low, int mid, int high) {
     int left = low;      // starting index of left half of arr
     int right = mid + 1;   // starting index of right half of arr
 
-    //storing elements in the temporary array in a sorted manner//
+    //storing elements in the temporary array in a sorted manner
 
     while (left <= mid && right <= high) {
         if (arr[left] <= arr[right]) {
@@ -124,27 +124,30 @@ void merge(vector<int> &arr, int low, int mid, int high) {
         }
     }
 
-    // if elements on the left half are still left //
+    // if elements on the left half are still left 
 
     while (left <= mid) {
         temp.push_back(arr[left]);
         left++;
     }
 
-    //  if elements on the right half are still left //
+    //  if elements on the right half are still left 
     while (right <= high) {
         temp.push_back(arr[right]);
         right++;
     }
 
-    // transfering all elements from temporary to arr //
+    int x = 0;
+    // transfering all elements from temporary to arr
+    // Note 1
     for (int i = low; i <= high; i++) {
-        arr[i] = temp[i - low];
+        arr[i] = temp[x++];
     }
     // instead of using i-low we could have created another variable x=0 and could have done temp[x++]
 }
 
 void mergeSort(vector<int> &arr, int low, int high) {
+    //Note 2
     if (low >= high) return;
     int mid = (low + high) / 2 ;
     mergeSort(arr, low, mid);  // left half
@@ -171,6 +174,11 @@ int main() {
     return 0 ;
 }
 ```
+
+Note 1: Note how we transfer the values of temp into arr. We always have our unique low and high values, so we insert the values in arr from low to high. And for temp we use a variable x and keep inserting the values from x=0.
+
+Note 2: In base case of mergeSort don't make the mistake of not returning null for low==high, because if we simply write if(low>high) then in that case this allows the condition l == r (i.e., one element) to still proceed into the recursion, which causes the midpoint to be the same as l, and the recursive calls never terminate properly for all cases. This will give you Segmentation Fault.
+
 Time complexity: O(nlogn) 
 
 Reason: At each step, we divide the whole array into two halves, for that logn and we assume n steps are taken to get sorted array, so overall time complexity will be nlogn
@@ -210,81 +218,49 @@ To summarize, the main intention of this process is to place the pivot, after ea
 
 ## Code ->
 ```cpp
-#include <bits/stdc++.h>
-using namespace std;
+class Solution {
+  public:
+    // Function to sort an array using quick sort algorithm.
+    void quickSort(vector<int>& arr, int low, int high) {
+        // Base case: if the subarray has one or zero elements, it's already sorted.
+        if(low >= high) return;
+        
+        // Partition the array and get the pivot index.
+        int pivot = partition(arr, low, high);
+        
+        // Recursively sort the left subarray (elements less than the pivot).
+        quickSort(arr, low, pivot - 1);
+        // Recursively sort the right subarray (elements greater than the pivot).
+        quickSort(arr, pivot + 1, high);
+    }
 
-// Function to partition the array and return the pivot index
-int partition(vector<int> &arr, int low, int high) {
-    // Choose the first element as the pivot
-    int pivot = arr[low];
-    int i = low;
-    int j = high;
-
-    // Move elements smaller than the pivot to the left and larger to the right
-    while (i < j) {
-        while (arr[i] <= pivot && i <= high - 1) {
-            i++;
+  public:
+    // Function that takes last element as pivot, places the pivot element at
+    // its correct position in sorted array, and places all smaller elements
+    // to left of pivot and all greater elements to right of pivot.
+    int partition(vector<int>& arr, int low, int high) {
+        // Choose the first element as the pivot.
+        int pivot = low;
+        int left = low;
+        int right = high;
+        
+        // Loop to rearrange elements around the pivot.
+        while(left <= right) {
+            // Move the left pointer to the right until an element greater than the pivot is found.
+            while(left <= right && arr[left] <= arr[pivot]) left++;
+            // Move the right pointer to the left until an element less than or equal to the pivot is found.
+            while(right >= left && arr[right] > arr[pivot]) right--;
+            // If the left pointer is still less than the right pointer, swap the elements.
+            if(left < right) swap(arr[left], arr[right]);
         }
-
-        while (arr[j] > pivot && j >= low + 1) {
-            j--;
-        }
-
-        // Swap arr[i] and arr[j] if they are out of order
-        if (i < j) swap(arr[i], arr[j]);
+        
+        // Swap the pivot element with the element at the right pointer.
+        swap(arr[low], arr[right]);
+        
+        // Return the index of the pivot element after partitioning.
+        return right;
     }
-
-    // Swap the pivot element to its correct position
-    swap(arr[low], arr[j]);
-
-    // Return the index of the pivot element
-    return j;
-}
-
-// Quicksort recursive function
-void qs(vector<int> &arr, int low, int high) {
-    // Base case: if the partition size is greater than 1
-    if (low < high) {
-        // Find the pivot index such that elements on the left are smaller and on the right are larger
-        int pIndex = partition(arr, low, high);
-
-        // Recursively sort the subarrays on the left and right of the pivot
-        qs(arr, low, pIndex - 1);
-        qs(arr, pIndex + 1, high);
-    }
-}
-
-// Wrapper function for quicksort
-vector<int> quickSort(vector<int> arr) {
-    // Call the quicksort function with the entire array
-    qs(arr, 0, arr.size() - 1);
-
-    // Return the sorted array
-    return arr;
-}
-
-int main() {
-    // Sample array for testing
-    vector<int> arr = {4, 6, 2, 5, 7, 9, 1, 3};
-    int n = arr.size();
-
-    // Display the array before using quicksort
-    cout << "Before Using Quick Sort: " << endl;
-    for (int i = 0; i < n; i++) {
-        cout << arr[i] << " ";
-    }
-    cout << endl;
-
-    // Call the quicksort function and display the sorted array
-    arr = quickSort(arr);
-    cout << "After Using Quick Sort: " << "\n";
-    for (int i = 0; i < n; i++) {
-        cout << arr[i] << " ";
-    }
-    cout << "\n";
-
-    return 0;
-}
+};
 ```
 - Time Complexity: O(N*logN), where N = size of the array.
 - Space Complexity: O(1) + O(N) auxiliary stack space.

@@ -278,7 +278,7 @@ public:
 ## Approaches ->
 1. Brute Force - Traverse in O(n*m) TC and find the target.
 2. Better Approach: Place yourself on either the top right or bottom left cornor, that way when you go to your left the elements decrease and when you go down the elements increase. Using this you can find the target in O(n+m) TC.
-3. Most Optimal: Treat 2D array as 1D array and perform Binary Search. TC -> O(log(n*m))
+3. Most Optimal: Treat 2D array as 1D array and perform Binary Search. TC -> O(log(n * m)). For that just take low = 0, mid = (low+high)/2 and high = m*n-1. To find the 2D element using this 1D mid, apply the formula -> `matrix[mid/n][mid%n]`
 
 ## Codes->
 2.
@@ -302,19 +302,17 @@ public:
 class Solution {
 public:
     bool searchMatrix(vector<vector<int>>& matrix, int target) {
-        int m = matrix[0].size(); int n = matrix.size();
+        int m = matrix.size(), n = matrix[0].size();
+        int low = 0, mid, high = m*n - 1;
 
-        int low = 0, high = (m*n)-1, mid;
-
-        while(low<=high){
+        while(low <= high){
             mid = (low+high)/2;
 
-            // Treat 2d as 1d using this formula
-            int val = matrix[mid/m][mid%m];
+            int element = matrix[mid/n][mid%n];
 
-            if(val==target) return true;
-            if(val>target) high = mid-1;
-            else low = mid+1;
+            if(element == target) return true;
+            else if(element < target) low = mid+1;
+            else high = mid-1;
         }
         return false;
     }
@@ -437,10 +435,6 @@ Algo: Using mid when we encounter ->
 2    ->    swap(arr[high], arr[mid]);
            high--;
 
-
-
-
-
 ```
 		repeat this process till mid crosses high.
 
@@ -468,6 +462,7 @@ public:
 
 ## Approaches->
 1. Maintain a lmin and rmax hashtable where we store min elements from left and max elements from right respectively. Reverse the rmax. Then return the maximum difference between lmin and rmax at each index. That's your answer. SC-> O(n) TC-> O(n)
+
 2. Keep a minimum to store minimum price and a maximum to store maximum profit. Traverse the array, if the visited element is smaller than minimum price then update the min price and move on. Else compare the profit (p = price[i] - minNum) with max profit and update max profit.
 
 ---
@@ -516,7 +511,8 @@ public:
 ```
 # [48. Rotate Image](https://leetcode.com/problems/rotate-image/description/)
 ## Approaches ->
-1. Brute force -> Take another dummy matrix of n*n, and then take the first row of the matrix and put it in the last column of the dummy matrix, take the second row of the matrix, and put it in the second last column of the matrix and so.
+1. Brute force -> Take another dummy matrix of n*n, and then take the first row of the matrix and put it in the last
+
 2. Optimized (In place) -> By observation, we see that the first column of the original matrix is the reverse of the first row of the rotated matrix, so that’s why we transpose the matrix and then reverse each row, and since we are making changes in the matrix itself space complexity gets reduced to O(1).
 ---
 
@@ -597,35 +593,13 @@ public:
 # [287. Find the Duplicate Number](https://leetcode.com/problems/find-the-duplicate-number/description/)
 
 ## Approaches ->
-- Sort the array. Find dupl. [TC -> O(log N)]
-- Hashtable. [SC -> O(N)]
-- Using Set -> After insertion of the elements in set, if the size did not increase then the element is dupl.
-- Tortoise method aka. Linkedlist cycle method. We take a fast and a slow pointer, move the fast pointer by two steps and slow by one for each real position in array (i.e. slow = nums[slow]). When both the slow and the fast pointer have the same values, shift either the fast or the slow pointer to the beginning of the array. Now move slow and fast pointer by one step only. When thier values are same again, the value is the answer.
-- Swap sort.
+1. Brute Force. TC -> O(N^2)
+2. Sort the array. Find dupl. [TC -> O(log N)]
+3. Using Set -> After insertion of the elements in set, if the size did not increase then the element is dupl. TC -> O(N), SC -> O(N)
+4. Swap sort.
 
 ---
-## Codes ->
-
-Tortoise Method ->
-```cpp
-class Solution {
-public:
-    int findDuplicate(vector<int>& nums) {
-        int fast = nums[0];
-        int slow = nums[0];
-        do{
-            slow = nums[slow];
-            fast = nums[nums[fast]];
-        } while(fast!=slow);
-        fast = nums[0];
-        while(fast!=slow){
-            slow = nums[slow];
-            fast = nums[fast];
-        }
-        return slow;
-    }
-};
-```
+## Code ->
 
 Swap sort ->
 ```cpp
@@ -681,7 +655,11 @@ public:
 ## Approaches->
 - Brute Force
 - Hashmap
-- Best approach->
+
+- Best approach-> 
+
+So for this we use extended version of Boyer Moore’s Voting Algorithm. Since the majority element occurs more than n/3 times, there can be either 0, 1 or even 2 majority element. So we will keep track of 2 majority elements with some conditions. And at the end check the occurrence of both the elements, if they are majority elements then include them in our answer vector. Here's the approach: 
+
 1. Initialize 4 variables:
 cnt1 & cnt2 –  for tracking the counts of elements
 el1 & el2 – for storing the majority of elements.
@@ -737,41 +715,31 @@ public:
 
 ## Approaches ->
 - Brute Force TC->O(n^2)
+
 - Two pointer -> Sort the array. We will keep a left pointer at the first index and a right pointer at the last index. Now until left < right, we will check the sum of arr[left] and arr[right]. Now if the sum < target, we need bigger numbers and so we will increment the left pointer. But if sum > target, we need to consider lesser numbers and so we will decrement the right pointer. 
 If sum == target we will return the indices. TC-> O(n log n)
-- Keep a hashmap where you store all the elements in the array. Traverse the array and do `toFind = target-arr[i]`. If you find `toFind` in the hashmap then you return their indices. But remember to insert in the hashmap in the same loop as you calculate the toFind to avoid duplicacy. TC-> O(n) SC-> O(n)
+
+- Keep a hashmap where you store all the elements in the array. Traverse the array and do `toFind = target-arr[i]`. If you find `toFind` in the hashmap then you return their indices. But remember to insert in the hashmap in the same loop as you calculate the toFind to avoid duplicates. TC-> O(n) SC-> O(n). Also instead of using map use unordered_map so that the search TC of per element is O(1) instead of O(log n).
 
 ## Code -> 
-2. 
-```cpp
-sort(arr.begin(), arr.end());
-    int left = 0, right = n - 1;
-    while (left < right) {
-        int sum = arr[left] + arr[right];
-        if (sum == target) {
-            return "YES";
-        }
-        else if (sum < target) left++;
-        else right--;
-    }
-    return "NO";
-```
+
 3. 
 ```cpp
 class Solution {
 public:
-    vector<int> twoSum(vector<int>& arr, int target) {
-        unordered_map<int, int> mp;
+    vector<int> twoSum(vector<int>& nums, int target) {
+        unordered_map<int, int> prevElem;
         vector<int> ans;
-        
-        for(int i=0; i<arr.size(); i++){ 
-            if(mp.count(target-arr[i])){
+
+        for(int i=0; i<nums.size(); i++){
+            if(prevElem.contains(target-nums[i])){
+                ans.push_back(prevElem[target-nums[i]]);
                 ans.push_back(i);
-                ans.push_back(mp[target-arr[i]]);
-                return ans;
+                break;
             }
-            mp[arr[i]] = i;
+            prevElem[nums[i]] = i;
         }
+
         return ans;
     }
 };
@@ -781,12 +749,17 @@ public:
 
 ## Approaches->
 - Brute force.
-- Best approach is the combination of the best approach of 2 sum problem combined with the for loop for one extra element -> 
+
+- Best approach is the combination of the better approach of 2 sum problem (sorting method) combined with the for loop for one extra element. Note that we must ask interviewer if duplicate ans is allowed. The interviewer will always say no, it's not allowed. Here's the steps to take->    
     - Sort the array to simplify traversal and avoid duplicate answers.
     - Use a for-loop to iterate over unique elements (nums[i]).
-    - Maintain two pointers (low and high) to find triplet sums equal to the negative of the current element.
+    - Inside the for loop, maintain two pointers (low and high) to find triplet sums equal to the negative of the current element.
     - Skip duplicate elements in the for-loop to avoid duplicate triplets.
     - Output the distinct triplets that satisfy the condition nums[i] + nums[low] + nums[high] == 0.
+
+---
+
+Read the code and the comments inside it because you are going to make some blunders in this code. The coding is tough here, not the approach, so practice before watching the sol, if possible. NAHH.. JUST SEEING THE SOL WON'T HELP, YOU HAVE TO SOLVE IT!
 
 ---
 ## Code->
@@ -795,22 +768,27 @@ class Solution {
 public:
     vector<vector<int>> threeSum(vector<int>& nums) {
         vector <vector <int>> ans;
-        if(nums.size()<3) return ans;     
+        if(nums.size()<3) return ans; 
+
+        // sort the array    
         sort(nums.begin(), nums.end()); 
        
         for(int i=0; i<nums.size()-2; i++){
-            if(i && nums[i]==nums[i-1]) continue;// we want to ignore duplicate answers, that's why we will move for duplicate nums[i]. eg-> -1 -1 -1 2 3.. we will check for the first -1 and then jump i to 2.
+            if(i && nums[i]==nums[i-1]) continue;
+            // we want to ignore duplicate answers, that's why we will move for duplicate nums[i]. eg-> -1 -1 -1 2 3.. we will check for the first -1 and then jump i to 2. Note that we will not write the condition as- if(nums[i]==nums[i+1]) continue; This is because for the above example taken, we want the other -1s to survive, so if we did this then -1s in the start will not be counted and this will affect our answer, so we will always take the first -1 and not skip them, and only skip the next -1s.
            
             int lo = i+1, hi = nums.size()-1;   
             while(lo < hi){
                 if(nums[i]+nums[hi]+nums[lo]==0){
+                    // note how we take input in vector of vector.
                     ans.push_back({nums[i], nums[hi], nums[lo]});
                    
-                    // we will also move the low and the high pointer if the elements on them is equal to avoid duplicate answers. eg-> ...-1 2(low) 2 3 4 5 5(hi).. then we move like -> ..-1 2 2 3(low) 4(hi) 5 5.
-                    while(lo<hi && nums[lo] == nums[lo+1]) lo++;
-                    while(lo<hi && nums[hi] == nums[hi-1]) hi--;
+                    // we will also move the low and the high pointer if the elements on them is equal, this is to avoid duplicate answers. eg-> ...-1 2(low) 2 3 4 5 5(hi).. then we move like -> ..-1 2 2 3(low) 4(hi) 5 5.
                     lo++;
                     hi--;
+                    while(lo<hi && nums[lo] == nums[lo-1]) lo++; //note the condition
+                    while(lo<hi && nums[hi] == nums[hi+1]) hi--; //note the condition. These two loops are always written inside this if condition and not outside for the other two else if conditions, otherwise runtime error.
+                    
                 }
                 else if(nums[i]+nums[hi]+nums[lo]>0) hi--;
                 else lo++;     
@@ -849,7 +827,7 @@ For i, use: if(i > 0 && nums[i] == nums[i-1]) continue;
 
 For j, use: if(j > i+1 && nums[j] == nums[j-1]) continue;
 
-📌 Explanation:
+Explanation:
 Take nums = [1,1,1,2,2,3,4]. If we fix i = 0, we don’t want to consider i = 1 or i = 2 because it's the same number as before (1). Similarly for j. But we must not skip the first occurrence, so use i > 0 and j > i+1 respectively.
 
 Explanation: j starts from 2nd index, which has element 1. But according to the logic of skip if nums[j]==nums[j-1], this 1 will be skipped. That's why we are using hte j>i+1 in the check first.
@@ -923,40 +901,163 @@ public:
 };
 ```
 
+[128. Longest Consecutive Sequence](https://leetcode.com/problems/longest-consecutive-sequence/description/)
+
+## Approaches->
+
+1. We can simply sort the array and run a for loop to find the longest consecutive sequence.
+
+2. Using Set data structure - First, we will put all the array elements into the set data structure.
+If a number, num, is a starting number, ideally, num-1 should not exist. So, for every element, x, in the set, we will check if x-1 exists inside the set. :
+If x-1 exists: This means x cannot be a starting number and we will move on to the next element in the set.
+If x-1 does not exist: This means x is a starting number of a sequence. So, for number, x, we will start finding the consecutive elements.
+How to search for consecutive elements for a number, x:
+Instead of using linear search, we will use the set data structure itself to search for the elements x+1, x+2, x+3, and so on.
+
+Edge case - If there is no element in nums, return 0.
+
+## Code->
+```cpp
+class Solution {
+public:
+    int longestConsecutive(vector<int>& nums) {
+        if(nums.size()==0) return 0;
+        unordered_set<int> st; // use unordered set
+        int ans = 1;
+        int count = 1;
+
+        // insert all elements of array into the set
+        for(int i=0; i<nums.size(); i++){
+            st.insert(nums[i]);
+        }
+
+        // iterate in the set (not in the array because that will give TLE)
+        for(auto elem: st){
+            // if you find an element that is the starting element of a consecutive sequence, then proceed
+            if(st.find(elem-1)==st.end()){
+                elem++;
+                while(st.contains(elem)){
+                    count++;
+                    elem++;
+                } 
+            }
+
+            // compare ans and reset count variable.
+            ans = max(ans, count);
+            count = 1;
+        }
+        return ans;
+    }
+};
+```
+### Complexity Analysis->
+Now think of the TC on your own. 
+
+Time Complexity: O(N) + O(2*N) ~ O(3*N), where N = size of the array.
+Reason: O(N) for putting all the elements into the set data structure. After that for every starting element, we are finding the consecutive elements. Though we are using nested loops, the set will be traversed at most twice in the worst case. So, the time complexity is O(2*N) instead of O(N^2).
+
+Space Complexity: O(N), as we are using the set data structure to solve this problem.
+
+
 # [Largest subarray with 0 sum](https://practice.geeksforgeeks.org/problems/largest-subarray-with-0-sum/1)
 
 ## Approaches ->
 - Brute force: Check all subarrays and if their sum is 0 return the biggest one.
-- Using prefix sum: Take an example: 
+- Using prefix sum: let us understand the intuition->
 
-array->   15 -2  2 -8 1 7 -15 10 23. ans is 5 i.e from -2 to 7.
+There can be two cases that will give us our longest subarray with zero sum:
 
-prefSum-> 15 13 15  7 8 15  0 10 23
+Case 1: If at any index the prefix sum is 0, it means the subarray from the start (index 0) to that index adds up to 0.
+Array: 15, -2, 2, -8, 1, 7, -15, 5
+Prefix Sums: 15, 13, 15, 7, 8, 15, 0, 5
+Here, prefix sum becomes 0 at index 6 → that means the subarray from index 0 to 6 adds up to 0.
+So the length is 7.
 
-As you can clearly observe that to find the max size of subarray with 0 sum we will simply subtract the position of two same elements in the prefix sum, i.e. 15 is in at index 0 and 15 is at index 5. 5-0 = 5. This approach works because as we traverse the array and calculate the prefix sum at each position, encountering the same prefix sum value at different indices implies that the subarray between those indices has a sum of 0. This is due to the fact that the sum of elements between two equal prefix sum values cancels out, leading to a sum of 0. Also if at any position the prefix sum comes out to be 0 then you know that the element at 0 index and the element at ith index have their subarray sum as 0. To tackle this we will use map and have 0 in it as index -1.
+Case 2: If a prefix sum value repeats, it means the subarray between the first and second occurrence of that value has a sum of 0. Let's take an example
+Array: 15, -2, 2, -8, 1, 7, 10
+Prefix Sums: 15, 13, 15, 7, 8, 15, 25
+
+Here, 15 appears at index 0, 2, and 5:
+Between index 0 and 2: subarray -2, 2 → sum is 0
+Between index 0 and 5: subarray -2, 2, -8, 1, 7 → sum is 0
+
+So, the longest subarray with 0 sum is of length 5.
+
 
 ## Code ->
 ```cpp
-class Solution{
-    public:
-    int maxLen(vector<int>&A, int n)
-    {   
-        unordered_map<int, int> mp; //unordered map cause TC to find an elem is O(1)
-        mp[0] = -1; // initialize 0 as -1 index
-        // By setting mp[0] = -1, we essentially mark the index -1 for the prefix sum of 0. This helps in calculating the length of the subarray with a sum of 0 when the same prefix sum value is encountered later in the array.
-        
-        int ans = 0;
+class Solution {
+  public:
+    int maxLen(vector<int>& arr) {
+        int largestSubarraySumZero = 0;
         int sum = 0;
 
-        for (int i = 0; i < A.size(); i++) {
-            sum += A[i];
-            if (mp.find(sum) != mp.end()) {
-                ans = max(ans, i - mp[sum]);
-                continue;
+        unordered_map<int, int> prefixSum; // Stores first occurrence of each prefix sum
+
+        for(int i = 0; i < arr.size(); i++) {
+            sum += arr[i];
+
+            if(sum == 0) {
+                largestSubarraySumZero = i + 1; // Subarray from 0 to i has sum 0
+            } else {
+                if(prefixSum.find(sum) != prefixSum.end())
+                    largestSubarraySumZero = max(largestSubarraySumZero, i - prefixSum[sum]);
+                else
+                    prefixSum[sum] = i; // Store first occurrence
             }
-            mp[sum] = i;
         }
-        return ans;
+
+        return largestSubarraySumZero;
+    }
+};
+```
+
+# [Longest Subarray with Sum K](https://www.geeksforgeeks.org/problems/longest-sub-array-with-sum-k0809/1)
+## Approach ->
+✅ Case 1:
+If the current prefix sum itself equals k, then the subarray from the start to current index is a valid candidate.
+Array: [10, 5, 2, 7, 1, -10]
+Prefix sum: [10, 15, 17, 24, 25, 15], k = 15
+At index 5, sum is 15. So ans = 5.
+
+✅ Case 2:
+If the difference (prefix_sum - k) has appeared before in the map, it means:
+The subarray between the previous occurrence of prefix_sum - k and current index has a sum = k.
+We calculate its length and update the maximum.
+
+Example:
+Array: [1, 2, 3, 7, 5], k = 12
+Prefix sum: 1, 3, 6, 13, 18
+At index 3, prefix sum = 13.
+13 - 12 = 1, and 1 exists in the map at index 0.
+-> So, subarray from index 1 to 3 ([2, 3, 7]) has sum 12.
+This is Case 2: prefix_sum - k is found in the map → subarray with sum = k exists.
+
+## Code->
+```cpp
+class Solution {
+  public:
+    int longestSubarray(vector<int>& arr, int k) {
+        int largestSubarraySumK = 0;
+        int sum = 0;
+
+        unordered_map<int, int> prefixSum;
+
+        for(int i = 0; i < arr.size(); i++) {
+            sum += arr[i];
+
+            if(sum == k) {
+                largestSubarraySumK = i + 1;
+            } else if(prefixSum.find(sum - k) != prefixSum.end()) {
+                largestSubarraySumK = max(largestSubarraySumK, i - prefixSum[sum - k]);
+            }
+
+            // Only store the first occurrence
+            if(prefixSum.find(sum) == prefixSum.end())
+                prefixSum[sum] = i;
+        }
+
+        return largestSubarraySumK;
     }
 };
 ```
@@ -964,37 +1065,44 @@ class Solution{
 # [Subarray with given XOR](https://www.interviewbit.com/problems/subarray-with-given-xor/)
 
 ## Approach ->
-You already know the brute force approach so let's jump to the most optimized one. We will find the prefix xor. It is similar to the concept of the previous question. Basically we maintain prefix xor and we xor it with our target value. This will kill all the elements that are our answer since a xor a is 0. And then we find that remaining element in our map. For better understanding look at the code.
+Approach 1 ->
+The naive approach would be to check all possible subarrays and calculate their XOR, but that takes O(N²) time, which is inefficient for large inputs.
+
+Approach 2 ->
+We use the prefix XOR concept — i.e., XOR of all elements from the start up to index i.
+Now, if the prefix XOR at index i is xr, and we want to find subarrays ending at i with XOR = k, we look for a prefix XOR x such that:
+xr ^ x = k   ⇒   x = xr ^ k
+This means: if we've already seen a prefix XOR x = xr ^ k, then the subarray between that earlier point and i has XOR = k.
+Read the code and you would understand the sol.
+
 
 ## Code ->
 ```cpp
-int Solution::solve(vector<int> &A, int B) {
-    int xr = 0;  
-    int ans = 0; 
-    
-    unordered_map<int, int> mp;
-    
-    // Initialize the XOR of an empty subarray
-    mp[xr]++;
-    
-    // Iterate through the array A
-    for(int i=0; i<A.size(); i++){
-        // Update the XOR value by XORing the current element
-        xr = xr ^ A[i];
+class Solution {
+public:
+    long subarrayXor(vector<int> &arr, int k) {
+        long ans = 0;      // To store final count of subarrays
+        int xr = 0;        // Current prefix XOR
+        unordered_map<int, int> mp; // Stores frequency of prefix XORs
         
-        // Calculate the desired XOR value by XORing the current XOR value with target B
-        int x = xr ^ B;
+        mp[xr]++;          // Initialize with prefix XOR = 0
         
-        // Update the answer by adding the count of subarrays with the desired XOR value x. If x does not exist then 0 is added. 
-        ans += mp[x];
+        for(int i = 0; i < arr.size(); i++) {
+            xr = xr^ arr[i]; // Update the current prefix XOR
+            
+            // We're looking for a prefix XOR that satisfies: xr ^ x = k => x = xr ^ k
+            int x = xr ^ k;
+            
+            // If x is present, it means we found subarrays ending at i with XOR k
+            ans += mp[x];
+            
+            // Store the current prefix XOR
+            mp[xr]++;
+        }
         
-        // Update the count of the current XOR value in the hash map
-        mp[xr]++;
+        return ans;
     }
-    
-    // Return the final count of subarrays with XOR equal to B
-    return ans;
-}
+};
 ```
 # [3. Longest Substring Without Repeating Characters](https://leetcode.com/problems/longest-substring-without-repeating-characters/description/)
 
@@ -1018,7 +1126,9 @@ public:
 
         // Iterate through the string using the 'r' pointer
         while(r < s.size()) {
-            // Check if the current character at 'r' is already in the map and its index is greater than or equal to 'l'
+
+            // Check if the current character at 'r' is already in the map and its index is greater than or equal to 'l'. Remember-> mp[s[r]] >= l this condition is necessary for the code to work for edge cases like - 'abba'. If you blindly move l = mp[s[r]] + 1 whenever mp.contains(s[r]), you might accidentally move l backwards, which invalidates the window and causes wrong results.
+
             if(mp.find(s[r]) != mp.end() && mp[s[r]] >= l) {
                 // If true, move 'l' pointer to the next position after the last occurrence of the current character
                 l = mp[s[r]] + 1;
@@ -1535,12 +1645,201 @@ public:
     }
 };
 ```
-<<<<<<< HEAD
-=======
 
+[136. Single Number](https://leetcode.com/problems/single-number/description/)
+
+```cpp
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        int ans = 0;
+        for(int i=0; i<nums.size(); i++){
+            ans = ans ^ nums[i];
+        }
+        return ans;
+    }
+};
+```
+
+# [Count Inversion](https://www.codingninjas.com/studio/problems/count-inversions_615?leftPanelTabValue=PROBLEM)
+
+## [Approaches](https://takeuforward.org/data-structure/count-inversions-in-an-array/)
+
+Pre Requisite - Merge Sort
+
+Note: The sol of this question is just that we pass a count variable to our merge function and when we find that arr[left]>arr[right] then we increase the count using this formula -> count += (mid-left+1)
+
+## Code->
+```cpp
+// The code from top to bottom is a merge sort code, just added one additional line to count answer.
+#include <bits/stdc++.h> 
+void merge(vector<long long> &ar, long long low, long long mid, long long high, long long &ans){
+    long long left = low;
+    long long right = mid+1;
+
+    vector<int> vec;
+
+    while(left <= mid && right<= high){
+        if(ar[left]>ar[right]){
+            ans += (mid - left + 1); // only additional line to count answer
+            vec.push_back(ar[right++]);
+        } 
+        else vec.push_back(ar[left++]);
+    }
+    while(left<= mid) vec.push_back(ar[left++]);
+    while(right<=high) vec.push_back(ar[right++]);
+
+    int x = 0;
+    for(int i=low; i<=high; i++) ar[i] = vec[x++];
+}
+void mergeSort(vector<long long> &ar, long long low, long long high, long long &ans){
+    if(low >= high){
+        return;
+    }
+
+    long long mid = (high + low) / 2;
+
+    mergeSort(ar, low, mid, ans);
+    mergeSort(ar, mid+1, high, ans);
+    merge(ar, low, mid, high, ans);
+}
+
+long long getInversions(long long *arr, int n){
+    vector<long long> ar;
+    for(int i=0; i<n; i++) ar.push_back(arr[i]);
+    long long ans = 0;
+    mergeSort(ar, 0, n-1, ans);
+    return ans;
+}
+```
+
+TC ->  O(N*logN), SC-> O(N), as in the merge sort We use a temporary array to store elements in sorted order.
+
+# [493. Reverse Pairs](https://leetcode.com/problems/reverse-pairs/description/)
+
+## Approach->
+
+DISCLAIMER: SOLVE THIS QUESTION, REGARDLESS OF WHETHER YOU REMEMBER THE APPROACH OR NOT. THIS WILL HELP.
+
+Prerequisite -Count Inversion.
+
+The method that we applied for count inversion will not work in the case of count reverse. Why? Let's take an example...
+
+### Prerequisite Recap – Count Inversion:
+In the Count Inversion problem, we want to count how many pairs (i, j) exist such that i < j and arr[i] > arr[j].
+In the merge step of merge sort, when comparing:
+leftArr = [6, 13, 21, 25]
+rightArr = [1, 2, 3, 4]
+If we are at left[i] = 6 and right[j] = 3, then since 6 > 3, all elements after 6 in the left array (13, 21, 25) are also greater than 3 (due to sorting). So, we can safely add all those elements in one go: mid - i + 1 pairs. This is efficient and accurate.
+
+### Why This Fails for Reverse Pairs (arr[i] > 2 * arr[j]):
+In Reverse Pairs, the condition changes to arr[i] > 2 * arr[j]. At first glance, it feels like we could apply the same idea. But here's where it breaks:
+Using the same arrays:
+leftArr = [6, 13, 21, 25]
+rightArr = [1, 2, 3, 4]
+Suppose we’re checking left[i] = 6 and right[j] = 3.
+Now check the condition:
+6 > 2 * 3 → 6 > 6 → False.
+So we move to right[j] = 4:
+6 > 2 * 4 → 6 > 8 → False again.
+
+If we followed the inversion logic, we’d keep moving the right pointer and eventually skip the rest of the pairs. But here's the mistake:
+When we get to left[i] = 13, now:
+13 > 2 * 3 → 13 > 6 → True
+13 > 2 * 4 → 13 > 8 → True
+So, while 6 is not a valid pair, 13, 21, 25 all are valid pairs with right[j] = 3 and right[j] = 4.
+
+If we blindly advanced the right pointer and didn’t recheck from the next left[i], we’d miss all these valid pairs. Hence, the optimization from Count Inversion does not apply here.
+
+## Intuition of countReversePairs Function:
+
+We are given two sorted halves:
+leftArr = [6, 13, 21, 25]
+rightArr = [1, 2, 3, 4]
+We need to count how many times an element in the left half is greater than 2 times an element in the right half, i.e., arr[i] > 2 * arr[j].
+Now, we can’t just check arr[i] > arr[j] like in Count Inversions, because multiplying by 2 changes the dynamics.
+Example:
+For left[0] = 6 → check right from the beginning:
+6 > 2×1 → ✅
+6 > 2×2 → ✅
+6 > 2×3 → ❌ → stop here
+So 6 forms 2 reverse pairs with 1 and 2.
+
+Now for left[1] = 13, we don’t start from right = 0 again.
+We continue from where we left off (since both arrays are sorted, later elements in left will also be greater than the earlier ones in right).
+So we now check from right = 2:
+13 > 2×3 → ✅
+13 > 2×4 → ✅
+So, 13 forms 2 more reverse pairs.
+This way, we efficiently slide the right pointer without rechecking, and count all such valid pairs.
+That’s the core intuition!
+
+```cpp
+class Solution {
+public:
+    // Merge two sorted subarrays arr[low...mid] and arr[mid+1...high]
+    void merge(vector<long long int> &arr, int low, int mid, int high) {
+        vector<int> temp;
+        int left = low, right = mid + 1;
+
+        while(left <= mid && right <= high) {
+            if(arr[left] < arr[right])
+                temp.push_back(arr[left++]);
+            else 
+                temp.push_back(arr[right++]);
+        }
+
+        while(left <= mid) temp.push_back(arr[left++]);
+        while(right <= high) temp.push_back(arr[right++]);
+
+        for(int i = low; i <= high; i++)
+            arr[i] = temp[i - low];
+    }
+
+    // Count reverse pairs in arr[low...high] across the two halves
+    void countReversePairs(vector<long long int> &arr, int low, int mid, int high, int &count) {
+        int right = mid + 1;
+
+        // For each element in the left half
+        for(int i = low; i <= mid; i++) {
+            // Move right pointer while condition holds
+            while(right <= high && arr[i] > 2LL * arr[right]) // right<=high condition must bechecked first otherwise RuntimeError
+                right++;
+            // Add number of valid reverse pairs for arr[i]
+            count += right - (mid + 1); // ensure to enclose mid+1 in a bracket otherwise you will get a wrong ans
+        }
+    }
+
+    // Merge sort function with reverse pair counting
+    void mergeSort(vector<long long int> &arr, int low, int high, int &count) {
+        if(low >= high) return;
+        int mid = (low + high) / 2;
+
+        mergeSort(arr, low, mid, count);
+        mergeSort(arr, mid + 1, high, count);
+        countReversePairs(arr, low, mid, high, count); // call countReversePairs function after getting the two sorted arrays
+        merge(arr, low, mid, high); // after counting, then merge
+    }
+
+    // Main function
+    int reversePairs(vector<int>& nums) {
+        int count = 0;
+
+        // Convert to long long to avoid overflow during multiplication (leetcode specific)
+        vector<long long int> arr(nums.begin(), nums.end());
+        mergeSort(arr, 0, arr.size() - 1, count);
+
+        return count;
+    }
+};
+```
+TC-> O(2N*logN). SC-> O(N)
+
+### Extras->
 Given an array/sequence of size n, possible
 
 Subarray = n*(n+1)/2
 Subseqeunce = (2^n) -1 (non-empty subsequences)
 Subset = 2^n
->>>>>>> 06f223e (Codes and Logic updated)
+
+

@@ -52,6 +52,8 @@ After this, the interviewer might ask "what if we have duplicate elements"?
 ## Approach -> 
 If we reach the end (m-1 && n-1 index) then return 1. If we go out of bounds then return 0. These two are the base conditions. Now what result we have got from the left transition and the right transition will sum it up and return the answer.
 
+Note: Recursive sol will give TLE.
+
 ---
 ## Code ->
 ```cpp
@@ -68,6 +70,37 @@ public:
     }
 };
 ```
+### Complexity Analysis
+At each cell (i, j), two recursive calls are made. 
+TC -> O(2^(m+n)) ---- Exponential.
+The space used is due to the recursive call stack. The maximum depth of recursion is m+n
+SC -> O(m+n)
+
+### DP Solution:
+```cpp
+class Solution {
+public:
+    int helper(int m, int n, vector<vector<int>> &dp){
+        if(m==0 && n==0){
+            return 1;
+        }
+        if(m<0 || n<0){
+            return 0;
+        }
+
+        if(dp[m][n] != -1) return dp[m][n]; // If the dp has the ans, simply return it.
+
+        return dp[m][n] = helper(m-1, n, dp) + helper(m, n-1, dp); // store the ans in dp.
+ 
+    int uniquePaths(int m, int n) {
+        vector<vector<int>> dp(m, vector<int>(n, -1)); // Take dp of size m and n and populate them with -1
+        return helper(m-1, n-1, dp);
+    }
+};
+```
+### Complexity Analysis
+TC-> Since the code visits every possible position of m and n once, therefore the TC is O(m*n)
+SC-> SC of DP is O(m * n) and SC of recursive call stack is O(m+n) hence the overall SC is O(m*n)
 
 
 
@@ -1897,6 +1930,10 @@ public:
 
 ## [Approaches](https://takeuforward.org/data-structure/count-inversions-in-an-array/)
 
+Pre Requisite - Merge Sort
+
+Note: The sol of this question is just that we pass a count variable to our merge function and when we find that arr[left]>arr[right] then we increase the count using this formula -> count += (mid-left+1)
+
 ## Code->
 ```cpp
 // The code from top to bottom is a merge sort code, just added one additional line to count answer.
@@ -1945,60 +1982,119 @@ TC ->  O(N*logN), SC-> O(N), as in the merge sort We use a temporary array to st
 
 # [493. Reverse Pairs](https://leetcode.com/problems/reverse-pairs/description/)
 
-## Approach -> Exactly same as the approach in the question above. Just make another function to calculate the answer and call the function before merging the two arrays(sorted). [link](https://takeuforward.org/data-structure/count-reverse-pairs/)
+## Approach->
+
+DISCLAIMER: SOLVE THIS QUESTION, REGARDLESS OF WHETHER YOU REMEMBER THE APPROACH OR NOT. THIS WILL HELP.
+
+Prerequisite -Count Inversion.
+
+The method that we applied for count inversion will not work in the case of count reverse. Why? Let's take an example...
+
+### Prerequisite Recap – Count Inversion:
+In the Count Inversion problem, we want to count how many pairs (i, j) exist such that i < j and arr[i] > arr[j].
+In the merge step of merge sort, when comparing:
+leftArr = [6, 13, 21, 25]
+rightArr = [1, 2, 3, 4]
+If we are at left[i] = 6 and right[j] = 3, then since 6 > 3, all elements after 6 in the left array (13, 21, 25) are also greater than 3 (due to sorting). So, we can safely add all those elements in one go: mid - i + 1 pairs. This is efficient and accurate.
+
+### Why This Fails for Reverse Pairs (arr[i] > 2 * arr[j]):
+In Reverse Pairs, the condition changes to arr[i] > 2 * arr[j]. At first glance, it feels like we could apply the same idea. But here's where it breaks:
+Using the same arrays:
+leftArr = [6, 13, 21, 25]
+rightArr = [1, 2, 3, 4]
+Suppose we’re checking left[i] = 6 and right[j] = 3.
+Now check the condition:
+6 > 2 * 3 → 6 > 6 → False.
+So we move to right[j] = 4:
+6 > 2 * 4 → 6 > 8 → False again.
+
+If we followed the inversion logic, we’d keep moving the right pointer and eventually skip the rest of the pairs. But here's the mistake:
+When we get to left[i] = 13, now:
+13 > 2 * 3 → 13 > 6 → True
+13 > 2 * 4 → 13 > 8 → True
+So, while 6 is not a valid pair, 13, 21, 25 all are valid pairs with right[j] = 3 and right[j] = 4.
+
+If we blindly advanced the right pointer and didn’t recheck from the next left[i], we’d miss all these valid pairs. Hence, the optimization from Count Inversion does not apply here.
+
+## Intuition of countReversePairs Function:
+
+We are given two sorted halves:
+leftArr = [6, 13, 21, 25]
+rightArr = [1, 2, 3, 4]
+We need to count how many times an element in the left half is greater than 2 times an element in the right half, i.e., arr[i] > 2 * arr[j].
+Now, we can’t just check arr[i] > arr[j] like in Count Inversions, because multiplying by 2 changes the dynamics.
+Example:
+For left[0] = 6 → check right from the beginning:
+6 > 2×1 → ✅
+6 > 2×2 → ✅
+6 > 2×3 → ❌ → stop here
+So 6 forms 2 reverse pairs with 1 and 2.
+
+Now for left[1] = 13, we don’t start from right = 0 again.
+We continue from where we left off (since both arrays are sorted, later elements in left will also be greater than the earlier ones in right).
+So we now check from right = 2:
+13 > 2×3 → ✅
+13 > 2×4 → ✅
+So, 13 forms 2 more reverse pairs.
+This way, we efficiently slide the right pointer without rechecking, and count all such valid pairs.
+That’s the core intuition!
+
 ```cpp
 class Solution {
 public:
-    void merge(vector<long long int> &ar, int low, int mid, int high, long long int &ans){
-        int left = low;
-        int right = mid+1;
+    // Merge two sorted subarrays arr[low...mid] and arr[mid+1...high]
+    void merge(vector<long long int> &arr, int low, int mid, int high) {
+        vector<int> temp;
+        int left = low, right = mid + 1;
 
-        vector<int> vec;
-
-        while(left <= mid && right<= high){
-            if(ar[left]>ar[right]){
-                vec.push_back(ar[right++]);
-            } 
-            else vec.push_back(ar[left++]);
+        while(left <= mid && right <= high) {
+            if(arr[left] < arr[right])
+                temp.push_back(arr[left++]);
+            else 
+                temp.push_back(arr[right++]);
         }
-        while(left<= mid) vec.push_back(ar[left++]);
-        while(right<=high) vec.push_back(ar[right++]);
 
-        int x = 0;
-        for(int i=low; i<=high; i++) ar[i] = vec[x++];
+        while(left <= mid) temp.push_back(arr[left++]);
+        while(right <= high) temp.push_back(arr[right++]);
+
+        for(int i = low; i <= high; i++)
+            arr[i] = temp[i - low];
     }
 
-    // Function to calculate the answer
-    void calculate(vector<long long int> &ar, int low, int mid, int high, long long int &ans){
-        int left = low, right = mid+1;
-        while(left<=mid && right<=high){
-            if( ar[left] <= (ar[right])*2 ) left++;
-            else{
-                ans+=(mid-left+1);
+    // Count reverse pairs in arr[low...high] across the two halves
+    void countReversePairs(vector<long long int> &arr, int low, int mid, int high, int &count) {
+        int right = mid + 1;
+
+        // For each element in the left half
+        for(int i = low; i <= mid; i++) {
+            // Move right pointer while condition holds
+            while(right <= high && arr[i] > 2LL * arr[right]) // right<=high condition must bechecked first otherwise RuntimeError
                 right++;
-            }
+            // Add number of valid reverse pairs for arr[i]
+            count += right - (mid + 1); // ensure to enclose mid+1 in a bracket otherwise you will get a wrong ans
         }
     }
 
-    void mergeSort(vector<long long int> &ar, int low, int high, long long int &ans){
-        if(low >= high){
-            return;
-        }
+    // Merge sort function with reverse pair counting
+    void mergeSort(vector<long long int> &arr, int low, int high, int &count) {
+        if(low >= high) return;
+        int mid = (low + high) / 2;
 
-        int mid = (high + low) / 2;
-
-        mergeSort(ar, low, mid, ans);
-        mergeSort(ar, mid+1, high, ans);
-        calculate(ar, low, mid, high, ans); // calculate function call
-        merge(ar, low, mid, high, ans);
+        mergeSort(arr, low, mid, count);
+        mergeSort(arr, mid + 1, high, count);
+        countReversePairs(arr, low, mid, high, count); // call countReversePairs function after getting the two sorted arrays
+        merge(arr, low, mid, high); // after counting, then merge
     }
 
+    // Main function
     int reversePairs(vector<int>& nums) {
-        long long int ans = 0;
-        vector<long long int> ar;
-        for(int i=0; i<nums.size(); i++) ar.push_back(nums[i]);
-        mergeSort(ar, 0, nums.size()-1, ans);
-        return ans;
+        int count = 0;
+
+        // Convert to long long to avoid overflow during multiplication (leetcode specific)
+        vector<long long int> arr(nums.begin(), nums.end());
+        mergeSort(arr, 0, arr.size() - 1, count);
+
+        return count;
     }
 };
 ```
