@@ -290,6 +290,35 @@ public:
 Sliding window Technique -> The approach is fairly simple. We have to pick the cards from either the front or the back. We can also pick the cards from both front and back. So in order to find the maximum score we can find the minimum score to make the question simpler. First, we take a window whose size is total size - k. Then we find the least sum in that window. And finally we subtract the total sum of the array with the least sum to find the maximum sum. Note-> We need not calculate the total sum, that will be covered in prefix sum itself.
 
 ## Code ->
+1. Using prefixSum
+```cpp
+class Solution {
+public:
+    int maxScore(vector<int>& cardPoints, int k) {
+        vector<int> prefixSum(cardPoints.size()+1, 0);
+   
+        //finding the prefix sum
+        for(int i=0; i<cardPoints.size(); i++)
+            prefixSum[i+1] = prefixSum[i] + cardPoints[i];
+       
+        //declaring the minimum sum and window size
+        int minSum = INT_MAX;
+        int window = cardPoints.size()-k; // window will be total size - k
+        int i = 1;
+       
+        //run the loop for the given window and update the minimum sum.
+        while(window<prefixSum.size()){
+            int sum = prefixSum[window] - prefixSum[i-1];
+            minSum = min(minSum, sum);
+            window++; i++;
+        }
+
+        //return total sum - minimum sum
+        return prefixSum[prefixSum.size()-1] - minSum;
+    }
+};
+```
+2. Using simple variables 
 ```cpp
 class Solution {
 public:

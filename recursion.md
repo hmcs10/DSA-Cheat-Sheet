@@ -1311,6 +1311,18 @@ public:
 };
 ```
 
+## Complexity Analysis->
+Time Complexity:
+O(M × N × 4^L)
+
+- M × N → Check every cell in the board.
+- 4^L → Worst-case DFS (4 directions, L = word length).
+
+Space Complexity:
+O(L)
+
+- Recursion stack depth = L (no extra space used).
+
 # [Rat in a Maze Problem - I](https://www.geeksforgeeks.org/problems/rat-in-a-maze-problem/1)
 
 ## Approach ->

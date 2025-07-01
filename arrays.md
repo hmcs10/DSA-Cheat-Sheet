@@ -83,7 +83,35 @@ int trap(vector<int>& height) {
         return ans;
     }
 ```
-If you still didn't understand the solution just look at striver's solution with patience and you will be able to understand.
+
+# [11. Container With Most Water](https://leetcode.com/problems/container-with-most-water/description/)
+
+## Approaches ->
+- Brute Force
+- Take two pointers. One on the start and another at the end. Check if the element (line) on the start is greater than the element at the end. If yes then move end pointer else move the pointer at the start. We do this because it is pretty intuitive that we have to move if we find a smaller height container for better chances of finding a larger height container, because distance is always decreasing, the only thing that can maximize the area is the height of the container itself. Now we find the area on every step by multiplying minimum height of the line with distance bw the two lines.
+
+---
+## Code ->
+```cpp
+class Solution {
+public:
+    int maxArea(vector<int>& height) {
+        int ans = 0;
+        int st = 0;
+        int en = height.size()-1;
+       
+        while(st<=en){
+             // area is the minimum height bw start and end multiplied by the distance between start and end.
+            int area = min(height[st], height[en]) * (en-st); 
+            ans = max(ans, area); // updating answer with area
+            if(height[st]>height[en]) en--; // move the pointer at the height that has lower height value.
+            else st++;
+        }
+        return ans;
+    }
+};
+```
+
 
 # [54. Spiral Matrix](https://leetcode.com/problems/spiral-matrix/)
 
@@ -321,7 +349,7 @@ public:
 
 # [240. Search a 2D Matrix II](https://leetcode.com/problems/search-a-2d-matrix-ii/description/)
 ## Approach ->
-The approach 2 of the above question works here.
+The approach 2 of the above question works here. But not the binary search method. 
 
 # [769. Max Chunks To Make Sorted](https://leetcode.com/problems/max-chunks-to-make-sorted/)
 ## Approach-> 
@@ -352,7 +380,7 @@ public:
         if(n==0)  return 0;
         vector<bool> prime(n, true);
         prime[0] = false, prime[1] = false;
-        for (int i = 0; i < sqrt(n); ++i) {
+        for (int i = 2; i < sqrt(n); ++i) {
             if (prime[i]) {
                 for (int j = i*i; j < n; j += i) { // note below
                     prime[j] = false;
@@ -517,7 +545,7 @@ public:
 ---
 
 ## CODE -> 
-```
+```cpp
 void rotate(vector<vector<int>>& matrix) {
         // Transpose of matrix (Try this on your own first)
         for(int i=0; i<matrix.size(); i++)
@@ -651,7 +679,7 @@ public:
 };
 ```
 # [229. Majority Element II](https://leetcode.com/problems/majority-element-ii/description/)
-
+NOTE: Solve it
 ## Approaches->
 - Brute Force
 - Hashmap
@@ -881,17 +909,10 @@ public:
                         while(left<right && nums[right]==nums[right+1]) right--;
                     }
                     // If sum is greater than target, move right to get a smaller sum
-                    else if(sum>target){
-                        right--;
-                        // Skip duplicates
-                        while(left<right && nums[right]==nums[right+1]) right--;
-                    }
+                    else if(sum>target) right--;
+
                     // If sum is less than target, move left to get a bigger sum
-                    else{
-                        left++;
-                        // Skip duplicates
-                        while(left<right && nums[left]==nums[left-1]) left++;
-                    }
+                    else left++;
                 }
             }
         }
@@ -901,7 +922,7 @@ public:
 };
 ```
 
-[128. Longest Consecutive Sequence](https://leetcode.com/problems/longest-consecutive-sequence/description/)
+# [128. Longest Consecutive Sequence](https://leetcode.com/problems/longest-consecutive-sequence/description/)
 
 ## Approaches->
 
@@ -1262,8 +1283,12 @@ public:
 - Sort
 - Hashtable
 - Make a set. Set has the property of storing only unique elem. But sc is O(N)
-- SwapSort -> In swapsort method we must use a set to contain all the duplicate elements as because if we don't use set then duplicates of the duplicate element will be stored in the ans vector.
-- Go to an element and make the element on the index of the element as negative. But before that, check if the element on the position of that element is negative or not (check if nums[abs(nums[i])-1] < 0) and if it is negative then that means another number same as the element exist that made the number negative. Doesn't make sense? Dry run.
+- SwapSort -> In swapsort method we must use a set to contain all the duplicate elements as because we want to return the list of duplicate elements but only once. Eg. If 2 appears twice in the array, we don't want our ans vector to have 2 twice, we want it to have every duplicate element once. If we don't use set then both occurence of the duplicate element will be stored in the ans vector.
+- Optimized Approach->
+    - This approach only works if we have an array with all non-negative numbers.
+    - Use the array as a hashmap: For each number, we'll treat its value (absolute value) as an index in the array.
+    - Mark visited numbers: When we encounter a number, we'll negate the value at its corresponding index i.e. make the value of the element negative (-number).
+    - Detect duplicates: If we find that a number's corresponding index already contains a negative value, it means we've seen this number before, so it's a duplicate.
 
 ## Codes ->
 swapsort->
@@ -1296,205 +1321,30 @@ public:
     }
 };
 ```
-Last method->
+Optimized ->
 ```cpp
 class Solution {
 public:
     vector<int> findDuplicates(vector<int>& nums) {
-        vector <int> ans;
-       
-        for(int i=0; i<nums.size(); i++){
-            if(nums[abs(nums[i])-1] < 0)
-                ans.push_back(abs(nums[i]));
-            nums[abs(nums[i])-1] =  nums[abs(nums[i])-1] * (-1);
-        }
-       
-        return ans;
-    }
-};
-```
-
-# [11. Container With Most Water](https://leetcode.com/problems/container-with-most-water/description/)
-
-## Approaches ->
-- Brute Force
-- Take two pointers. One on the start and another at the end. Check if the element (line) on the start is greater than the element at the end. If yes then move end pointer else move the pointer at the start. We do this because it is pretty intuitive that we have to move if we find a smaller height container for better chances of finding a larger height container, because distance is always decreasing, the only thing that can maximize the area is the height of the container itself. Now we find the area on every step by multiplying minimum height of the line with distance bw the two lines.
-
----
-## Code ->
-```cpp
-class Solution {
-public:
-    int maxArea(vector<int>& height) {
-        int ans = 0;
-        int st = 0;
-        int en = height.size()-1;
-       
-        while(st<=en){
-             // area is the minimum height bw start and end multiplied by the distance between start and end.
-            int area = min(height[st], height[en]) * (en-st); 
-            ans = max(ans, area); // updating answer with area
-            if(height[st]>height[en]) en--; // move the pointer at the height that has lower height value.
-            else st++;
-        }
-        return ans;
-    }
-};
-```
-
-# [1423. Maximum Points You Can Obtain from Cards](https://leetcode.com/problems/maximum-points-you-can-obtain-from-cards/)
-
-## Approach ->
-Sliding window Technique -> The approach is fairly simple. We have to pick the cards from either the front or the back. We can also pick the cards from both front and back. So in order to find the maximum score we can find the minimum score to make the question simpler. First, we take a window whose size is total size - k. Then we find the least sum in that window. And finally we subtract the total sum of the array with the least sum to find the maximum sum. Note-> We need not calculate the total sum, that will be covered in prefix sum itself.
-
-## Code ->
-1. Using prefixSum
-```cpp
-class Solution {
-public:
-    int maxScore(vector<int>& cardPoints, int k) {
-        vector<int> prefixSum(cardPoints.size()+1, 0);
-   
-        //finding the prefix sum
-        for(int i=0; i<cardPoints.size(); i++)
-            prefixSum[i+1] = prefixSum[i] + cardPoints[i];
-       
-        //declaring the minimum sum and window size
-        int minSum = INT_MAX;
-        int window = cardPoints.size()-k; // window will be total size - k
-        int i = 1;
-       
-        //run the loop for the given window and update the minimum sum.
-        while(window<prefixSum.size()){
-            int sum = prefixSum[window] - prefixSum[i-1];
-            minSum = min(minSum, sum);
-            window++; i++;
-        }
-
-        //return total sum - minimum sum
-        return prefixSum[prefixSum.size()-1] - minSum;
-    }
-};
-```
-2. Using simple variables 
-```cpp
-class Solution {
-public:
-    int maxScore(vector<int>& cardPoints, int k) {
-        // Calculate the total sum of all cards
-        int totalSum = accumulate(cardPoints.begin(), cardPoints.end(), 0);
-
-        // If the number of cards to be selected is equal to the total number of cards,
-        // return the total sum, as we can select all cards.
-        if (k == cardPoints.size()) 
-            return totalSum;
-
-        // Initialize variables for the sliding window approach
-        int ans = INT_MAX, l = 0, r = 0, sum = 0;
-
-        // Update k to represent the size of the desired subarray
-        k = cardPoints.size() - k;
-
-        // Sliding window approach
-        while (r < cardPoints.size()) {
-            sum += cardPoints[r];
-
-            // Check if the size of the current window is equal to k
-            if (r - l + 1 == k)
-                ans = min(ans, sum);
-
-            r++;
-
-            // If the window size exceeds k, move the left pointer to maintain the window size
-            if (r - l + 1 > k) {
-                sum -= cardPoints[l];
-                l++;
-            } 
-        }
-
-        // Return the maximum score, which is the total sum minus the minimum sum within the window
-        return totalSum - ans;
-    }
-};
-```
-
-# [79. Word Search](https://leetcode.com/problems/word-search/description/)
-
-## Approaches ->
-- Make a visited vector to track the visited elements of board. Then visit every element of board and call a recursive function for it. The idea is to check for left, right, up and down in the board and also keep a visited vector so that we don't  check the same elements twice. Pass idx as 0 to the recursive function initially to keep track of the word's index. Don't worry if you don't understand this line, dry run the code later. Now inside the recursive function check if the value of idx is word.size-1, if it is then return true because we increase the value of idx every time we find the next letter of word. Mark visited of element we are checking on as true at the start and at the end mark it as false because after backtracking we might need the current element for some other element's recursion call. Now in the middle check for left, right, up and down. [SC -> O(N)]
-- Same as the first approach but we reduce the space complexity by removing visited vector to track the visited elements. The idea is to remove visited and instead we can change the value of every visited element as something which can not exist like '@' in the code below. And after backtracking replace the value of present element from '@' to its original value because we might need it again for other recursion calls.
-
----
-## Codes ->
-Code 1 ->
-```cpp
-class Solution {
-public:
-   
-    bool findWord(vector<vector<char>>& board, string word, int i, int j, int idx, vector<vector<int>>& visited){
-        // if size of word - 1 is equal to idx then return true. This is because the value of idx increases only if we find the letters in string word.
-        if(idx == word.size()-1) return true;
-       
-        // marking visited as true
-        visited[i][j] = true;
-       
-       
-        //checking for left, right, up and down if the conditions are true and the recursion calls return true then return true finally.
-        if(i>0 && !visited[i-1][j] && board[i-1][j] == word[idx+1] && findWord(board, word, i-1, j, idx+1, visited)) return true;
-        if(j>0 && !visited[i][j-1] && board[i][j-1] == word[idx+1] && findWord(board, word, i, j-1, idx+1, visited)) return true;
-        if(i<board.size()-1 && !visited[i+1][j] && board[i+1][j] == word[idx+1] && findWord(board, word, i+1, j, idx+1, visited)) return true;
-        if(j<board[0].size()-1 && !visited[i][j+1] && board[i][j+1] == word[idx+1] && findWord(board, word, i, j+1, idx+1, visited)) return true;
-       
-        //marking visited as false after we are done with this recursion because we might need this element later on for other recursion calls
-        visited[i][j] = false;
-        return false;
-    }
-   
-    bool exist(vector<vector<char>>& board, string word) {
-        // making a temp vector to assign initial value of visited vector
-        vector<int> temp (board[0].size(),0);
-        vector <vector<int>> visited(board.size(), temp);
-
-        // checking for every element in board if it is equal to the first letter in word and then calling recursive function for it.
-        for(int i=0; i<board.size(); i++){
-            for(int j=0; j<board[0].size(); j++){
-                if(board[i][j] == word[0])
-                    if(findWord(board, word, i, j, 0, visited)) return true;
+        vector<int> ans;
+        
+        for(int i = 0; i < nums.size(); i++) {
+            // Get the absolute value of current number (since we might have negated it)
+            int num = abs(nums[i]);
+            
+            // Calculate the index this number would correspond to (0-based)
+            int index = num - 1;
+            
+            // If the number at this index is already negative, it means we've seen 'num' before
+            if(nums[index] < 0) {
+                ans.push_back(num); // Add to duplicates list
+            } else {
+                // Mark this number as seen by negating the value at its index
+                nums[index] = -nums[index];
             }
         }
-        return false;
-    }
-};
-```
-Code 2 ->
-```cpp
-class Solution {
-public:
-   
-    bool findWord(vector<vector<char>>& board, string word, int i, int j, int idx){
-        if(idx == word.size()-1) return true;
-        char t = board[i][j];
-        board[i][j] = '@'; // instead of using visited vector to keep track wheter the element is visited or not we simply change the value of element to '@'
-       
-        if(i>0 &&  board[i-1][j] == word[idx+1] && findWord(board, word, i-1, j, idx+1)) return true;
-        if(j>0  && board[i][j-1] == word[idx+1] && findWord(board, word, i, j-1, idx+1)) return true;
-        if(i<board.size()-1  && board[i+1][j] == word[idx+1] && findWord(board, word, i+1, j, idx+1)) return true;
-        if(j<board[0].size()-1  && board[i][j+1] == word[idx+1] && findWord(board, word, i, j+1, idx+1)) return true;
-       
-       
-        board[i][j] = t; // changing back the value of element to its original value
-        return false;
-    }
-   
-    bool exist(vector<vector<char>>& board, string word) {
-
-        for(int i=0; i<board.size(); i++){
-            for(int j=0; j<board[0].size(); j++){
-                if(board[i][j] == word[0])
-                    if(findWord(board, word, i, j, 0)) return true;
-            }
-        }
-        return false;
+        
+        return ans;
     }
 };
 ```
@@ -1646,7 +1496,7 @@ public:
 };
 ```
 
-[136. Single Number](https://leetcode.com/problems/single-number/description/)
+# [136. Single Number](https://leetcode.com/problems/single-number/description/)
 
 ```cpp
 class Solution {

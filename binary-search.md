@@ -74,6 +74,52 @@ int lowerBound(vector<int> arr, int n, int x) {
 
 - STL: `ub = upper_bound(arr.begin(), arr.end(), x) - arr.begin();`
 
+# [Floor and Ceil in Sorted Array](https://takeuforward.org/plus/dsa/problems/floor-and-ceil-in-sorted-array)
+## Approach ->
+Since the array is sorted, we can leverage Binary Search to efficiently find:
+
+    Floor: The largest element ≤ x (if exists, else -1).
+
+    Ceil: The smallest element ≥ x (if exists, else -1).
+
+Instead of two separate passes, we optimize by tracking both floor and ceil in a single Binary Search pass, updating them based on comparisons with x. We will write the normal binary search but whenever we find an element greater than x we know that element might be our potential ceil. Similarly if we find an elem lower than x, that might be our potential floor. And if we found x, that element is surely our floor and ceil. 
+
+```cpp
+class Solution {
+public:
+    vector<int> getFloorAndCeil(vector<int>& nums, int x) {
+        int floor = -1, ceil = -1;  // Initialize to -1 (not found)
+        int low = 0, high = nums.size() - 1;
+
+        while (low <= high) {
+            int mid = low + (high - low) / 2;  // Avoid overflow
+
+            if (nums[mid] == x) {  
+                // Exact match → floor = ceil = x
+                floor = ceil = nums[mid];
+                break;
+            }
+            else if (nums[mid] < x) {  
+                // Potential floor → store and search right
+                floor = nums[mid];
+                low = mid + 1;
+            }
+            else {  
+                // Potential ceil → store and search left
+                ceil = nums[mid];
+                high = mid - 1;
+            }
+        }
+
+        // Edge case: Ensure floor ≤ x and ceil ≥ x (handles duplicates)
+        if (floor != -1 && floor > x) floor = -1;
+        if (ceil != -1 && ceil < x) ceil = -1;
+
+        return {floor, ceil};  // Return pair
+    }
+};
+```
+
 # [34. Find First and Last Position of Element in Sorted Array](https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/description/)
 
 ## Approach ->
@@ -169,6 +215,9 @@ public:
     }
 };
 ```
+Note: `if(nums[mid]>=nums[lo])` In this check >= is important else there will be an edge case. eg of edge case 
+
+```- [3,1]. Target = 1.```
 
 # [81. Search in Rotated Sorted Array II](https://leetcode.com/problems/search-in-rotated-sorted-array-ii/description/)
 
@@ -502,6 +551,7 @@ public:
         long long totalH = 0;
         int n = piles.size();
         //find total hours
+        // Don't use loop to find the hours, instead you can use division in O(1) tc.
         for (int i = 0; i < n; i++) {
             totalH += ceil((double)(piles[i]) / (double)(hourly));
         }
@@ -514,7 +564,7 @@ public:
         while (low <= high) {
             int mid = (low + high) / 2;
             int totalH = calculateTotalHours(piles, mid);
-            // if for the given number of bananas per hour (mid), total hour is calculated. If this total hour is smaller than the given hour then that means koko is eating too fast, so we will lower the value of mid(no. of bananas per hour)
+            // For the given number of bananas to be eaten per hour (mid), total hour taken to eat complete pile is calculated. If this total hour is smaller than the given hour then that means koko is eating too fast, so we will lower the value of mid(no. of bananas per hour)
             if (totalH <= h) {
                 high = mid - 1;
             }
@@ -528,6 +578,15 @@ public:
     }
 };
 ```
+
+Potential mistakes while coding this approach:
+1. Returning mid instead of low
+2. Initializing low as 0 instead of 1. If 0 is initialized then we will get a runtime error because division by zero is undefined.
+3. Using a loop to find totalHour instead of division.
+
+TC-> O(n⋅log(max_pile))
+​SC-> O(1)
+
 
 # [1482. Minimum Number of Days to Make m Bouquets](https://leetcode.com/problems/minimum-number-of-days-to-make-m-bouquets/description/)
 
@@ -600,7 +659,8 @@ public:
     int smallestDivisor(vector<int>& nums, int threshold) {
         // lower the divisor, higher will be the sum by divisor, so we will try to find the lowest divisor that satisfies the conditions
         int n = nums.size();
-        if (n > threshold) return -1;
+
+        // note: initialized low with 1 instead of 0.
         int low = 1, high = *max_element(nums.begin(), nums.end());
 
         //Apply binary search:
@@ -679,135 +739,176 @@ public:
 ### Max-min/min-max problems start here
 
 # [ Aggressive Cows](https://www.codingninjas.com/studio/problems/aggressive-cows_1082559?utm_source=striver&utm_medium=website&utm_campaign=a_zcoursetuf)
+
 ### Min-max problem
 
-## [Approach](https://takeuforward.org/data-structure/aggressive-cows-detailed-solution/)
+## Intuition->
+
+You are given **n** stall positions and need to place **k cows** such that the **minimum distance between any two cows** is **maximized**.
+
+This is a classic **Binary Search on Answer** problem, where the idea is:
+
+* **We want to maximize the minimum distance** between any two cows.
+* So, we search in a range of distances: `low = 1` (smallest possible distance), `high = max(stalls) - min(stalls)` (largest possible distance).
+* For a given distance `mid`, we check: **is it possible to place all cows such that no two cows are closer than `mid`?**
+
+  * If yes → we try to increase the distance.
+  * If no → we reduce the distance.
+
+---
+
+### Why does this work?
+
+This is essentially trying to find the **largest distance** `d` such that we can place all `k` cows with at least `d` distance apart.
+
+This is a **monotonic decision function**:
+
+* If placing cows is possible at distance `d`, then it's also possible for any distance `< d`.
+* If it's **not possible** at distance `d`, then it's definitely **not possible** at any `d > current`.
+
+So, we can use binary search to efficiently find the answer.
+
+---
+
+### Why do we return `high`?
+
+This is the core observation:
+
+* In Binary Search on Answer problems, we search for a maximum (or minimum) **feasible** value.
+* During the loop:
+
+  * If `mid` is **feasible** (we can place cows), we go **right** (`low = mid + 1`) to try for a larger value.
+  * If `mid` is **not feasible**, we go **left** (`high = mid - 1`) to try a smaller value.
+
+Eventually:
+
+* `low` will move **past** the last feasible value (to the impossible side),
+* `high` will be at the **last feasible value** — the maximum possible minimum distance.
+
+Thus, **`high` is our answer**, and no need to store it in a separate variable.
+
+---
+
 
 ## Code ->
 ```cpp
-int numCows(vector<int> &stalls, int mid){
-    int cows = 1, last = stalls[0];
+// Helper function to count how many cows can be placed
+// such that the minimum distance between them is at least 'mid'
+int findNumOfCows(vector<int> &stalls, int mid) {
+    int cows = 1; // First cow placed at the first stall
+    int lastPos = stalls[0]; // Position of the last placed cow
 
-    for(int i=1; i<stalls.size(); i++){
-        if(stalls[i] - last >= mid){
+    // Iterate through stalls to place cows
+    for (int i = 1; i < stalls.size(); i++) {
+        // If the distance from last placed cow is at least 'mid', place a new cow
+        if (stalls[i] - lastPos >= mid) {
             cows++;
-            last = stalls[i];
+            lastPos = stalls[i]; // Update last placed cow position
         }
     }
-    return cows;
+
+    return cows; // Return total number of cows placed
 }
 
-int aggressiveCows(vector<int> &stalls, int k)
-{
-    //    Write your code here.
-    int low = 1;
-    int high = accumulate(stalls.begin(), stalls.end(), 0);
+// Main function to find the maximum minimum distance
+int aggressiveCows(vector<int> &stalls, int k) {
+    sort(stalls.begin(), stalls.end()); // Sort the stall positions
+
+    int low = 1; // Minimum possible distance between cows
+    int high = stalls.back() - stalls.front(); // Maximum possible distance
     int mid;
 
-    sort(stalls.begin(), stalls.end());
+    // Binary search to find the largest minimum distance possible
+    while (low <= high) {
+        mid = low + (high - low) / 2; // Mid distance to test
 
-    while(low<=high){
-        mid = low + (high-low)/2;
+        int numOfCows = findNumOfCows(stalls, mid); // Try placing cows with 'mid' distance
 
-        int cows = numCows(stalls, mid);
-
-        if(cows>=k) low = mid+1;
-        else high = mid-1;
+        if (numOfCows >= k) {
+            // If we can place at least 'k' cows, try for a bigger distance
+            low = mid + 1;
+        } else {
+            // Otherwise, reduce the distance
+            high = mid - 1;
+        }
     }
+
+    // 'high' now points to the maximum minimum distance possible
     return high;
 }
+
 ```
 
 # [ Allocate Books](https://www.codingninjas.com/studio/problems/allocate-books_1090540?utm_source=youtube&utm_medium=affiliate&utm_campaign=codestudio_Striver_BinarySeries&leftPanelTabValue=PROBLEM)
-### Max-min problem. See the brute force becausea its way easier.
+### Max-min problem. 
 
-## [Approaches](https://takeuforward.org/data-structure/allocate-minimum-number-of-pages/)
+## Intuition
+The problem requires allocating books to students in a contiguous manner such that the maximum number of pages assigned to any student is minimized. This is a classic optimization problem that can be efficiently solved using binary search. The key idea is to determine the minimum possible maximum pages any student has to read by checking feasible allocations within a search space defined by the maximum pages in a single book (lower bound) and the total sum of all pages (upper bound).
 
-## Code ->
+## Approach
+1. **Binary Search Setup**: 
+   - **Lower Bound (`low`)**: The maximum number of pages in a single book. This ensures each student gets at least one book.
+   - **Upper Bound (`high`)**: The sum of all pages, representing the scenario where one student reads all books.
+
+2. **Binary Search Execution**:
+   - For each midpoint (`mid`) in the current search range, calculate the number of students required to allocate all books such that no student reads more than `mid` pages.
+   - **Feasibility Check**: If the number of students required (`numOfStu`) is less than or equal to `m`, it means `mid` is a feasible solution. We then try to find a smaller `mid` by adjusting the upper bound (`high = mid - 1`).
+   - If `numOfStu` exceeds `m`, it means `mid` is too small, so we adjust the lower bound (`low = mid + 1`) to search for a larger `mid`.
+
+3. **Termination**: The loop terminates when `low` exceeds `high`, at which point `low` will point to the minimum possible maximum pages that can be allocated to `m` students.
+
+## Code->
 ```cpp
-// Function to count the number of students needed for a given maximum number of pages
-int countStudents(vector<int> &arr, int pages) {
-    int n = arr.size(); // size of array.
-    int students = 1;
-    long long pagesStudent = 0;
+// Function to calculate the number of students needed if each student can read at most 'pages' pages
+int findNumOfStu(vector<int> &arr, int pages) {
+    int students = 1;  // At least one student is needed
+    int currentPages = 0;  // Pages allocated to the current student
 
-    // Iterate through the array of pages
-    for (int i = 0; i < n; i++) {
-        if (pagesStudent + arr[i] <= pages) {
-            // Add pages to the current student
-            pagesStudent += arr[i];
-        }
-        else {
-            // Add pages to the next student
+    for (int i = 0; i < arr.size(); i++) {
+        // If adding the current book exceeds the 'pages' limit, allocate to a new student
+        if (currentPages + arr[i] > pages) {
             students++;
-            pagesStudent = arr[i];
+            currentPages = arr[i];  // Start new allocation for the new student
+        } else {
+            currentPages += arr[i];  // Add the current book to the current student's allocation
         }
     }
     return students;
 }
 
+// Function to find the minimum possible maximum pages allocated to any student
 int findPages(vector<int>& arr, int n, int m) {
-    //book allocation impossible:
-    if (m > n) return -1;
+    if (m > n) return -1;  // More students than books, allocation not possible
 
-    int low = *max_element(arr.begin(), arr.end()); // low will always be the max element because we can't make a book with anything less
-    int high = accumulate(arr.begin(), arr.end(), 0);
+    int low = arr[0];  // Initialize with the first book's pages
+    int high = 0;      // Will hold the total sum of all pages
 
-    for (int pages = low; pages <= high; pages++) {
-        if (countStudents(arr, pages) == m) {
-            return pages;
+    // Determine the lower and upper bounds for binary search
+    for (int i = 0; i < n; i++) {
+        low = max(low, arr[i]);  // 'low' is the maximum pages in any single book
+        high += arr[i];          // 'high' is the sum of all pages
+    }
+
+    // Binary search to find the minimum possible maximum pages
+    while (low <= high) {
+        int mid = low + (high - low) / 2;  // Midpoint to check
+
+        int numOfStu = findNumOfStu(arr, mid);  // Number of students needed for 'mid' pages
+
+        if (numOfStu <= m) {
+            // If feasible, try to find a smaller 'mid' by reducing the upper bound
+            high = mid - 1;
+        } else {
+            // If not feasible, increase the lower bound to find a larger 'mid'
+            low = mid + 1;
         }
     }
+
+    // 'low' holds the minimum possible maximum pages after the loop terminates
     return low;
 }
 ```
 
-## Code ->
-```cpp
-// Function to count the number of students needed for a given maximum number of pages
-int countStudents(vector<int> &arr, int pages) {
-    int n = arr.size(); // size of array.
-    int students = 1;
-    long long pagesStudent = 0;
-
-    // Iterate through the array of pages
-    for (int i = 0; i < n; i++) {
-        if (pagesStudent + arr[i] <= pages) {
-            // Add pages to the current student
-            pagesStudent += arr[i];
-        }
-        else {
-            // Add pages to the next student
-            students++;
-            pagesStudent = arr[i];
-        }
-    }
-    return students;
-}
-
-// Function to find the minimum number of pages such that the maximum pages assigned to a student is minimum
-int findPages(vector<int>& arr, int n, int m) {
-    // Book allocation is impossible if the number of students is greater than the number of books
-    if (m > n) return -1;
-
-    int low = *max_element(arr.begin(), arr.end()); // Initialize the minimum pages to the maximum pages in a single book
-    int high = accumulate(arr.begin(), arr.end(), 0); // Initialize the maximum pages to the sum of all pages in all books
-
-    // Perform binary search to find the minimum number of pages
-    while (low <= high) {
-        int mid = (low + high) / 2; // Calculate the middle value
-        int students = countStudents(arr, mid); // Get the count of students needed for the current maximum number of pages
-
-        if (students > m) {
-            low = mid + 1; // If more students are needed, increase the minimum pages
-        }
-        else {
-            high = mid - 1; // If the current number of students is sufficient, decrease the maximum pages
-        }
-    }
-    return low; // Return the minimum number of pages
-}
-```
 
 ### watch vid if you still don't understand
 
@@ -896,38 +997,40 @@ Same as of last two questions
 
 ## Code ->
 ```cpp
-int lowerBound(vector<int> arr, int n, int x) {
-    int low = 0, high = n - 1;
-    int ans = n;
+// Function to count the number of 1s in a sorted binary row using binary search
+int findNumOfOnes(vector<int> matrix) {
+    int low = 0, mid, high = matrix.size();
 
     while (low <= high) {
-        int mid = (low + high) / 2;
-        // maybe an answer
-        if (arr[mid] >= x) {
-            ans = mid;
-            //look for smaller index on the left
-            high = mid - 1;
-        }
-        else {
-            low = mid + 1; // look on the right
-        }
-    }
-    return ans;
-}
-int rowWithMax1s(vector<vector<int>> &matrix, int n, int m) {
-    int cnt_max = 0;
-    int index = -1;
+        mid = low + (high - low) / 2;
 
-    //traverse the rows:
+        if (matrix[mid] == 0)
+            low = mid + 1;  // Move to the right half if mid is 0
+        else
+            high = mid - 1; // Move to the left half if mid is 1
+    }
+
+    // The number of 1s is the total elements minus the index of the first 1
+    return matrix.size() - low;
+}
+
+// Function to find the row with the maximum number of 1s in a binary matrix
+int rowWithMax1s(vector<vector<int>> &matrix, int n, int m) {
+    int row = -1;       // Initialize row index to -1 (no row found)
+    int ones = 0;       // Initialize max count of 1s to 0
+
+    // Iterate through each row to find the one with the most 1s
     for (int i = 0; i < n; i++) {
-        // get the number of 1's:
-        int cnt_ones = m - lowerBound(matrix[i], m, 1);
-        if (cnt_ones > cnt_max) {
-            cnt_max = cnt_ones;
-            index = i;
+        int numOfOnes = findNumOfOnes(matrix[i]);
+
+        // Update row index if current row has more 1s than the previous max
+        if (numOfOnes > ones) {
+            row = i;
+            ones = numOfOnes;
         }
     }
-    return index;
+
+    return row;
 }
 ```
 
