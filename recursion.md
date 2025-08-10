@@ -375,7 +375,7 @@ int main() {
 - Time Complexity: O(N*logN), where N = size of the array.
 - Space Complexity: O(1) + O(N) auxiliary stack space.
 
-# Implement string to integer
+# [Implement string to integer](https://leetcode.com/problems/string-to-integer-atoi/)
 
 ## Code ->
 ```cpp
@@ -483,15 +483,36 @@ SC-> O(log n)
 
 # [39. Combination Sum](https://leetcode.com/problems/combination-sum/)
 
-## [Approach](https://takeuforward.org/data-structure/combination-sum-1/)
+## Approach->
+ATQ. We are given distinct integers in candidate array, so we need not to worry about the duplicate answer.
+
+There are 2 options viz to pick or not pick the current index element.
+If you pick the element, again come back at the same index as multiple occurrences of the same element is possible so the target reduces to target - arr[index] (where target -arr[index]>=0)and also insert the current element into the data structure.
+
+If you decide not to pick the current element, move on to the next index and the target value stays as it is. Also, the current element is not inserted into the data structure.
+
+While backtracking makes sure to pop the last element as shown in the recursion tree below.
+Keep on repeating this process while index < size of the array for a particular recursion call.
+
+Using this approach, we can get all the combinations.
+
+Base condition:
+If index== size of array and  target == 0 include the combination in our answer
+
+Let us look at the recursive tree for example 1 to understand better: 
+
+## Recursive Tree->
+![Combination Sum 1](images/combinationSum1.png)
+
+In the interview, draw the diagram for the possible answer (just like what's done above), i.e. look at the example and it's answer, and pick or not pick just to get the correct answer otherwise the diagram will be way too big.
 
 ## Code ->
 ```cpp
 class Solution {
 public:
     void helper(vector<int> &candidates, int target, vector<vector<int>> &ans, vector<int> temp, int i){
-        if(target<0) return; // To terminate the cases where i is not increasing
-        if(i>=candidates.size()){ // Will terminate the cases where i is increasing
+        if(target<0) return; // To terminate the cases where target cannot be reached since target has become negative.
+        if(i>=candidates.size()){ 
             if(target==0) ans.push_back(temp); // If we have reached the end, and achieved target then include in ans
             return;
         }
@@ -512,10 +533,10 @@ public:
     }
 };
 ```
-Time Complexity: O(2^t * k) where t is the target, k is the average length of each combination
+Time Complexity: O((2^t) * k) where t is the target, k is the average length of each combination
 
 Reason: 
-Case 1: Assume if you were not allowed to pick a single element multiple times, every element will have a couple of options: pick or not pick which is 2^n different recursion calls, also assuming that the average length of every combination generated is k. So total TC-> O(2^n * k) (expl: to put temp of length (let's say k) in ans, it will take a TC of O(k), because that is not a O(1) operation.)
+Case 1: Assume if you were not allowed to pick a single element multiple times, every element will have a couple of options: pick or not pick which is 2^n different recursion calls, also assuming that the average length of every combination generated is k. So total TC-> O((2^n) * k) (expl: to put temp of length (let's say k) in ans, it will take a TC of O(k), because that is not a O(1) operation.)
 
 Case 2: In this question where picking a single element multiple times is allowed, why is the TC not (2^n) but (2^t) (where n is the size of an array, and t is the target )?
 
@@ -614,6 +635,67 @@ Reason: Assume if all the elements in the array are unique then the no. of subse
 # Space Complexity:O(k*x)
 
 Reason: if we have x combinations then space will be x*k where k is the average length of the combination.
+
+# [216. Combination Sum III](https://leetcode.com/problems/combination-sum-iii/description/)
+
+## Approach ->
+![Combination Sum 3 recursive Diagram](images/CombinationSum3.png)
+
+## Key Insights
+1. **Backtracking Approach**: We'll systematically explore all possible combinations using recursion and backtracking.
+2. **Early Termination**: If the current sum exceeds `n`, we can stop exploring that path.
+3. **Unique Combinations**: By always moving forward in the number sequence (1-9), we avoid duplicate combinations.
+
+## Solution Approach
+1. Start from number 1, try including it in the combination.
+2. Recurse for the next number (i+1) to avoid reusing numbers.
+3. If the current combination length becomes k, check if the sum is n. If yes, store it.
+4. Use backtracking to remove the last added number and explore other options.
+
+## Code->
+```cpp
+class Solution {
+public:
+    void helper(int k, int n, vector<vector<int>>& ans, vector<int>& temp, int num, int sum) {
+        // Prune invalid paths early (sum exceeds target)
+        if(sum > n) return;
+        
+        // Valid combination found
+        if(temp.size() == k) {
+            if(sum == n) ans.push_back(temp);
+            return;
+        }
+        
+        // Explore all possible numbers from current position to 9
+        for(int i = num; i <= 9; i++) {
+            temp.push_back(i);  // Include current number
+            sum += i;
+            
+            // Recurse with next number to ensure uniqueness
+            helper(k, n, ans, temp, i + 1, sum);
+            
+            // Backtrack
+            temp.pop_back();
+            sum -= i;
+        }
+    }
+    
+    vector<vector<int>> combinationSum3(int k, int n) {
+        vector<vector<int>> ans;
+        vector<int> temp;
+        helper(k, n, ans, temp, 1, 0);  // Start with number 1 and sum 0
+        return ans;
+    }
+};
+```
+### Time and Space complexity:
+Time Complexity: The number of combinations is C(9,k) = 9!/(k!(9-k)!), and for each combination we do O(k) work (pushing to result).
+Total: C(9,k) * k
+
+Space Complexity:
+- Recursion stack goes up to depth k → O(k)
+- Output contains C(9,k) combinations, each of size k → O(k * C(9,k))
+
 
 # [Subset Sum](https://www.codingninjas.com/studio/problems/subset-sum_3843086?utm_source=striver&utm_medium=website&utm_campaign=a_zcoursetuf&leftPanelTabValue=PROBLEM)
 
@@ -787,6 +869,20 @@ The time complexity is O(N! * N), where N is the number of distinct integers in 
 The space complexity is O(N) for the recursion stack, as the recursion explores each element in the array. The space complexity is optimized compared to the previous approach as it doesn't use additional temporary vectors in each recursive call.
 
 # [22. Generate Parentheses](https://leetcode.com/problems/generate-parentheses/description/)
+## Recursive Tree->
+
+								   	(0, 0, '')
+								 	    |	
+									(1, 0, '(')  
+								   /           \
+							(2, 0, '((')      (1, 1, '()')
+							   /                 \
+						(2, 1, '(()')           (2, 1, '()(')
+						   /                       \
+					(2, 2, '(())')                (2, 2, '()()')
+						      |	                             |
+					res.append('(())')             res.append('()()')
+   
 ## Approach ->
 The helper function is called recursively with three parameters: the remaining counts of open parentheses (open), close parentheses (close), and the current combination string (str). The base case is when both open and close counts are zero, at which point the current combination is added to the result vector (ans).
 
@@ -1009,85 +1105,7 @@ What exactly to do:
 Let us look at this recursive tree and try to dry run it to understand..
 ![Recursive tree](images/PalindromePartitioning.png)
 
-
-### 🔍 Input: `"aab"`
-
-We want to find all ways to split this string such that every substring in a split is a **palindrome**.
-
----
-
-### 📌 Step-by-step Dry Run (Using Backtracking Tree in Image):
-
----
-
-####  Level 0
-
-* Start at index `0` (`idx = 0`)
-* Try all substrings starting from idx to i:
-
-  * `"a"` (from 0 to 0) → ✅ Palindrome
-
-    * `curr = ["a"]` → Go deeper
-  * `"aa"` (from 0 to 1) → ✅ Palindrome
-
-    * `curr = ["aa"]` → Go deeper
-  * `"aab"` (from 0 to 2) → ❌ Not a palindrome → Pruned
-
----
-
-####  Level 1: Left branch from `"a"`
-
-* Now `idx = 1` (after adding first `"a"`)
-* Try:
-
-  * `"a"` (from 1 to 1) → ✅ Palindrome
-
-    * `curr = ["a", "a"]` → Go deeper
-
----
-
-####  Level 2: Left branch from \["a", "a"]
-
-* Now `idx = 2`
-* Try:
-
-  * `"b"` (from 2 to 2) → ✅ Palindrome
-
-    * `curr = ["a", "a", "b"]` → ✅ End of string → Add to answer
-
-🧾 First Valid Answer: `["a", "a", "b"]`
-
-⬅️ Backtrack (pop `"b"` → `"a", "a"`)
-
-⬅️ Backtrack again (pop second `"a"` → `"a"`)
-
----
-
-####  Level 1: Right branch from `"aa"`
-
-* Now `idx = 2`
-* Try:
-
-  * `"b"` (from 2 to 2) → ✅ Palindrome
-
-    * `curr = ["aa", "b"]` → ✅ End → Add to answer
-
-🧾 Second Valid Answer: `["aa", "b"]`
-
-⬅️ Backtrack (pop `"b"` → `"aa"`)
-
-⬅️ Backtrack again (pop `"aa"` → `[]`)
-
----
-
-### Final Result:
-
-All possible palindromic partitions of `"aab"` are:
-
-```
-[["a", "a", "b"], ["aa", "b"]]
-```
-Look at this recursive tree for another example.. Try to understand this -> 
+Look at this recursive tree for another example -> 
 ![Recursive tree 2](images/PalindromePartitioning2.png)
 ---
 
@@ -1188,64 +1206,17 @@ public:
     }
 };
 ```
-# [216. Combination Sum III](https://leetcode.com/problems/combination-sum-iii/description/)
 
-## Approach ->
-![Combination Sum 3 recursive Diagram](images/CombinationSum3.png)
+## Complexity Analysis->
+* **Time Complexity**: O(4^n * n)
 
-## Key Insights
-1. **Backtracking Approach**: We'll systematically explore all possible combinations using recursion and backtracking.
-2. **Early Termination**: If the current sum exceeds `n`, we can stop exploring that path.
-3. **Unique Combinations**: By always moving forward in the number sequence (1-9), we avoid duplicate combinations.
+  * You make up to 4 choices at each of the n digits, and building each full string costs O(n).
 
-## Solution Approach
-1. Start from number 1, try including it in the combination.
-2. Recurse for the next number (i+1) to avoid reusing numbers.
-3. If the current combination length becomes k, check if the sum is n. If yes, store it.
-4. Use backtracking to remove the last added number and explore other options.
+* **Space Complexity**:
 
-## Code->
-```cpp
-class Solution {
-public:
-    void helper(int k, int n, vector<vector<int>>& ans, vector<int>& temp, int num, int sum) {
-        // Prune invalid paths early (sum exceeds target)
-        if(sum > n) return;
-        
-        // Valid combination found
-        if(temp.size() == k) {
-            if(sum == n) ans.push_back(temp);
-            return;
-        }
-        
-        // Explore all possible numbers from current position to 9
-        for(int i = num; i <= 9; i++) {
-            temp.push_back(i);  // Include current number
-            sum += i;
-            
-            // Recurse with next number to ensure uniqueness
-            helper(k, n, ans, temp, i + 1, sum);
-            
-            // Backtrack
-            temp.pop_back();
-            sum -= i;
-        }
-    }
-    
-    vector<vector<int>> combinationSum3(int k, int n) {
-        vector<vector<int>> ans;
-        vector<int> temp;
-        helper(k, n, ans, temp, 1, 0);  // Start with number 1 and sum 0
-        return ans;
-    }
-};
-```
-### Time and Space complexity:
-Time Complexity: The number of combinations is C(9,k) = 9!/(k!(9-k)!), and for each combination we do O(1) work (pushing to result).
+  * **Recursive call stack**: O(n)
+  * **Total** (all combinations): O(4^n * n) + O(n)
 
-Space Complexity:
-- Recursion stack goes up to depth k → O(k)
-- Output contains C(9,k) combinations, each of size k → O(k * C(9,k))
 
 
 # [79. Word Search](https://leetcode.com/problems/word-search/description/)
@@ -1269,8 +1240,8 @@ That is, we have to somehow keep track of our position so that we cannot find th
 
 In this approach, we are going to mark visited cells with some random character that will prevent us from revisiting them again and again.
 
-Special note: We have to return the final result vector in lexicographically smallest order. So we will always have our recursive calls in that order i.e. 'D' < 'L' < 'R' < 'U' if the question says so. 
 ---
+
 ## Code ->
 ```cpp
 class Solution {
